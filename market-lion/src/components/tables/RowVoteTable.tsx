@@ -1,14 +1,11 @@
 "use client";
-import { TIMEFRAMES, Timeframe } from "@/data/timeframes";
-import { DecisionPill, TierChip } from "./TableShell";
+import { TIMEFRAMES } from "@/data/timeframes";
+import { DecisionPill } from "./TableShell";
 import type { RowReport } from "@/lib/analysisEngine";
 
-export function RowVoteTable({ rows, weightLabel, getCategory, getTier, getDescription }:
-  { rows: RowReport[]; weightLabel: string;
-    getCategory?: (id: number) => string;
-    getTier?: (id: number) => "S"|"A"|"B"|"C";
-    getDescription?: (id: number) => string;
-  }) {
+export type EnrichedRow = RowReport & { category?: string; description?: string; tier?: "S"|"A"|"B"|"C" };
+
+export function RowVoteTable({ rows, weightLabel }: { rows: EnrichedRow[]; weightLabel: string }) {
   return (
     <table className="tbl">
       <thead>
@@ -30,8 +27,8 @@ export function RowVoteTable({ rows, weightLabel, getCategory, getTier, getDescr
           <tr key={r.id}>
             <td className="text-zinc-400">{r.id}</td>
             <td className="font-semibold text-zinc-100">{r.nameAr}</td>
-            <td className="text-zinc-400">{getCategory ? getCategory(r.id) : "—"}</td>
-            <td className="text-zinc-400 max-w-[28rem] truncate">{getDescription ? getDescription(r.id) : "—"}</td>
+            <td className="text-zinc-400">{r.category || "—"}</td>
+            <td className="text-zinc-400 max-w-[28rem] truncate">{r.description || "—"}</td>
             {TIMEFRAMES.map(tf => (
               <td key={tf} className="text-center">
                 {r.decision.perTf[tf] === 1 ? <span className="text-green-400">+1</span>

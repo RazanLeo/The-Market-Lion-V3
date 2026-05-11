@@ -27,12 +27,25 @@ export default function DashboardPage() {
   const direction = analysis.confluence.direction;
   const levels = buildLevels(direction === "NEUTRAL" ? "BUY" : direction, last.c, atr);
   const asset = ASSETS[0];
-  const sizing = computeLotSize({ capital: 10000, riskPct: 2, pipValuePerLot: asset.pipValuePerLot, stopLossPips: Math.max(1, Math.abs(levels.entry - levels.sl) / 0.0001) });
+  const sizing = computeLotSize({
+    capital: 10000, riskPct: 2,
+    pipValuePerLot: asset.pipValuePerLot,
+    stopLossPips: Math.max(1, Math.abs(levels.entry - levels.sl) / 0.0001)
+  });
 
-  const coreCat = (id: number) => CORE_TOOLS.find(t => t.id === id)?.category ?? "—";
-  const coreDesc = (id: number) => CORE_TOOLS.find(t => t.id === id)?.descriptionAr ?? "—";
-  const schoolsCat = (id: number) => SCHOOLS.find(t => t.id === id)?.category ?? "—";
-  const indCat = (id: number) => INDICATORS.find(t => t.id === id)?.category ?? "—";
+  // Pre-enrich rows with category/description (plain data, no functions across boundary)
+  const coreRows = analysis.tables.coreTools.rows.map(r => {
+    const t = CORE_TOOLS.find(x => x.id === r.id);
+    return { ...r, category: t?.category, description: t?.descriptionAr, tier: t?.tier as any };
+  });
+  const schoolRows = analysis.tables.schools.rows.map(r => {
+    const t = SCHOOLS.find(x => x.id === r.id);
+    return { ...r, category: t?.category, tier: t?.tier as any };
+  });
+  const indRows = analysis.tables.indicators.rows.map(r => {
+    const t = INDICATORS.find(x => x.id === r.id);
+    return { ...r, category: t?.category, tier: t?.tier as any };
+  });
 
   return (
     <>
@@ -44,15 +57,15 @@ export default function DashboardPage() {
         <Table2Fundamental asset={asset.symbol}/>
 
         <TableShell number={3} title="جدول ٣ — الأدوات الرئيسية الأساسية" weight="30%" subtitle="23 أداة • التحليل الفني الأساسي">
-          <RowVoteTable rows={analysis.tables.coreTools.rows} weightLabel="30%" getCategory={coreCat} getDescription={coreDesc}/>
+          <RowVoteTable rows={coreRows} weightLabel="30%"/>
         </TableShell>
 
         <TableShell number={4} title="جدول ٤ — جميع المدارس الفنية" weight="25%" subtitle="48 مدرسة • حصر شامل لكل مدارس التحليل الفني العالمي">
-          <RowVoteTable rows={analysis.tables.schools.rows} weightLabel="25%" getCategory={schoolsCat}/>
+          <RowVoteTable rows={schoolRows} weightLabel="25%"/>
         </TableShell>
 
         <TableShell number={5} title="جدول ٥ — المؤشرات الفنية" weight="10%" subtitle="54 مؤشر • Trend / Momentum / Volatility / Volume / Composite">
-          <RowVoteTable rows={analysis.tables.indicators.rows} weightLabel="10%" getCategory={indCat}/>
+          <RowVoteTable rows={indRows} weightLabel="10%"/>
         </TableShell>
 
         <Table6OrderFlow rows={analysis.tables.orderFlow.rows}/>
