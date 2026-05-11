@@ -1,0 +1,27 @@
+# Node
+**/node_modules/
+**/.next/
+**/out/
+**/build/
+**/dist/
+
+# Env
+.env
+.env.local
+.env*.local
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Build artifacts
+*.tsbuildinfo
+
+# Prisma local
+prisma/*.db
+prisma/*.db-journal
