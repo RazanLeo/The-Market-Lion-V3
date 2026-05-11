@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: marketlion
+      POSTGRES_PASSWORD: marketlion_change_me
+      POSTGRES_DB: marketlion
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [internal]
+
+  app:
+    build:
+      context: ./market-lion
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on: [db]
+    environment:
+      DATABASE_URL: "postgresql://marketlion:marketlion_change_me@db:5432/marketlion?schema=public"
+      NEXTAUTH_URL: "http://161.35.192.36"
+      NEXTAUTH_SECRET: "change_this_to_a_long_random_string_in_production"
+      NEXT_PUBLIC_APP_URL: "http://161.35.192.36"
+      NODE_ENV: production
+    networks: [internal, web]
+    expose: ["3000"]
+
+  proxy:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on: [app]
+    ports: ["80:80"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [web]
+
+volumes: { pgdata: {} }
+networks: { internal: {}, web: {} }
