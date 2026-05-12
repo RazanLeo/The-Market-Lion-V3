@@ -22,7 +22,7 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
           <th>التصنيف</th>
           <th>شرح الأداة واستراتيجيتها</th>
           {TIMEFRAMES.map(tf => <th key={tf} className="text-center">{tf}</th>)}
-          <th>نتيجة التحليل الشامل</th>
+          <th>نتيجة التحليل</th>
           <th>توافق الأطر الزمنية</th>
           <th>الوزن من {weightLabel}</th>
           <th>درجة الثقة</th>

@@ -95,7 +95,7 @@ export function Table2Fundamental({ asset }: { asset: string }) {
             <th>{t("common.actual")}</th>
             <th>{t("common.importance")}</th>
             <th>{t("common.source")}</th>
-            <th>{t("common.detailed_analysis")}</th>
+            <th>نتيجة التحليل الشامل المفصل</th>
             <th>{t("common.result")}</th>
             {TF.map(tf => <th key={tf} className="text-center">{tf}</th>)}
             <th>{t("common.weighted_score")}</th>
@@ -146,7 +146,7 @@ export function Table2Fundamental({ asset }: { asset: string }) {
             <th>{t("common.time_local")}</th>
             <th>{t("common.source")}</th>
             <th>{t("common.importance")}</th>
-            <th>{t("common.detailed_analysis")}</th>
+            <th>نتيجة التحليل الشامل المفصل</th>
             <th>{t("common.result")}</th>
             {TF.map(tf => <th key={tf} className="text-center">{tf}</th>)}
             <th>{t("common.weighted_score")}</th>
