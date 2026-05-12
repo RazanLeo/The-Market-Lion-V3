@@ -19,6 +19,8 @@ import { SCHOOLS_KB } from "@/data/kb/schools_kb";
 import { INDICATORS_KB } from "@/data/kb/indicators_kb";
 import { buildLevels, computeLotSize } from "@/lib/tradePlan";
 import { ASSETS } from "@/data/assets";
+import { ChatPanel } from "@/components/ChatPanel";
+import { PriceTicker } from "@/components/PriceTicker";
 
 export default function DashboardPage() {
   const [options, setOptions] = useState({ asset: "XAU/USD", riskPct: 2, capital: 10000, tf: "15M", mode: "BOT" as "BOT"|"MANUAL" });
@@ -65,6 +67,7 @@ export default function DashboardPage() {
   return (
     <>
       <Header variant="app"/>
+      <PriceTicker/>
       <TradingViewChart symbol={options.asset} interval={options.tf} height={800}/>
       <main className="max-w-[1600px] mx-auto px-3 md:px-5 py-5 space-y-5">
         <Table1Options onChange={(s) => setOptions(s)}/>
@@ -97,6 +100,16 @@ export default function DashboardPage() {
           tf={options.tf}
           direction={direction}
         />
+
+        <ChatPanel context={{
+          asset: options.asset,
+          tf: options.tf,
+          mode: options.mode,
+          riskPct: options.riskPct,
+          capital: options.capital,
+          confluence: analysis.confluence,
+          summaries: analysis.tables,
+        }}/>
       </main>
       <Footer/>
     </>
