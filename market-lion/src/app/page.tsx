@@ -8,7 +8,7 @@ import { ArrowLeft, Check, Crown, BarChart3, Newspaper, Building2, Shield, Zap, 
 import { useI18n } from "@/i18n/I18nProvider";
 
 export default function HomePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const features = [
     { icon: <Brain size={20}/>,    title: "ذكاء اصطناعي بالكامل",      desc: "كل التحليل يعمل بخوارزميات AI متقدمة لحظيًا، لا تدخل بشري ولا قرارات ذاتية." },
     { icon: <BarChart3 size={20}/>,title: "23 أداة + 48 مدرسة + 54 مؤشر", desc: "حصر شامل لكل مدارس وأدوات ومؤشرات التحليل الفني العالمي بدون حذف أو اختصار." },
@@ -26,7 +26,7 @@ export default function HomePage() {
     { num: 4, title: "جميع مدارس التحليل الفني",         weight: "25%", desc: "48 مدرسة عالمية: Dow، Wyckoff، Elliott، Gann، VSA، Harmonics، AI/ML…" },
     { num: 5, title: "المؤشرات الفنية",                  weight: "10%", desc: "54 مؤشر: MACD، Bollinger، Ichimoku، VWAP، ATR، RSI، Supertrend…" },
     { num: 6, title: "تدفق الأوامر والبوك ماب والسيولة", weight: "15%", desc: "Whale Tracker + Real-Time Money Flow + Footprint + DOM L2 + Iceberg…" },
-    { num: 7, title: "القرارات النهائية ومحرك التصويت",  desc: "دمج كل الجداول → Buy Lion / Sell Lion بمستويات Crown / 🟢/🟡/⚪." },
+    { num: 7, title: t("tables.t7.title"),  desc: locale === "ar" ? "دمج كل الجداول → Buy Lion / Sell Lion بمستويات Crown / Strong / Weak / None." : "Merging all tables → Buy Lion / Sell Lion across Crown / Strong / Weak / None tiers." },
     { num: 8, title: "خطة التداول والمخاطرة",            desc: "Entry • TP1-4 • SL • Trailing • OB • S/D • Fibonacci • تقارير PDF." },
   ];
 

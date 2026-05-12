@@ -21,8 +21,14 @@ function ImportancePill({ importance }: { importance: string }) {
     MEDIUM:    "bg-sky-500/15 text-sky-300 ring-sky-500/30",
     LOW:       "bg-zinc-500/15 text-zinc-300 ring-zinc-500/30",
   };
-  const txt: any = { VERY_HIGH: "عالي جدًا", HIGH: "عالي", MEDIUM: "متوسط", LOW: "منخفض" };
-  return <span className={`chip ring-1 ${map[importance] || map.LOW}`}>{txt[importance] || importance}</span>;
+  const txt = (importance: string) => {
+    if (typeof window === "undefined") return importance;
+    const loc = (typeof localStorage !== "undefined" && localStorage.getItem("ml.locale")) || "ar";
+    const ar: any = { VERY_HIGH: "عالي جدًا", HIGH: "عالي", MEDIUM: "متوسط", LOW: "منخفض" };
+    const en: any = { VERY_HIGH: "Very High", HIGH: "High", MEDIUM: "Medium", LOW: "Low" };
+    return (loc === "ar" ? ar : en)[importance] || importance;
+  };
+  return <span className={`chip ring-1 ${map[importance] || map.LOW}`}>{txt(importance)}</span>;
 }
 
 function tfCell(votes: Record<string, number> | undefined, tf: string) {
