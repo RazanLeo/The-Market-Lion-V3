@@ -1,7 +1,8 @@
+"use client";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { ChartPanel } from "@/components/ChartPanel";
-import { StatsBar } from "@/components/StatsBar";
+import { TradingViewChart } from "@/components/TradingViewChart";
 import { Table1Options } from "@/components/tables/Table1Options";
 import { Table2Fundamental } from "@/components/tables/Table2Fundamental";
 import { Table6OrderFlow } from "@/components/tables/Table6OrderFlow";
@@ -16,19 +17,18 @@ import { INDICATORS } from "@/data/indicators";
 import { buildLevels, computeLotSize } from "@/lib/tradePlan";
 import { ASSETS } from "@/data/assets";
 
-export const dynamic = "force-dynamic";
-
 export default function DashboardPage() {
+  const [options, setOptions] = useState({ asset: "XAU/USD", riskPct: 2, capital: 10000, tf: "15M", mode: "BOT" as "BOT"|"MANUAL" });
+
   const candles = syntheticCandlesAllTf(2050);
   const analysis = runAnalysis(candles);
   const last = candles["15M"].at(-1)!;
   const atr = (Math.max(...candles["15M"].slice(-14).map(c => c.h - c.l))) || 5;
-
   const direction = analysis.confluence.direction;
   const levels = buildLevels(direction === "NEUTRAL" ? "BUY" : direction, last.c, atr);
-  const asset = ASSETS[0];
+  const asset = ASSETS.find(a => a.symbol === options.asset) || ASSETS[0];
   const sizing = computeLotSize({
-    capital: 10000, riskPct: 2,
+    capital: options.capital, riskPct: options.riskPct,
     pipValuePerLot: asset.pipValuePerLot,
     stopLossPips: Math.max(1, Math.abs(levels.entry - levels.sl) / 0.0001)
   });
@@ -40,32 +40,31 @@ export default function DashboardPage() {
   });
   const schoolRows = analysis.tables.schools.rows.map(r => {
     const t = SCHOOLS.find(x => x.id === r.id);
-    return { ...r, category: t?.category, tier: t?.tier as any };
+    return { ...r, category: t?.category, tier: t?.tier as any, description: `مدرسة ${t?.nameAr} — منهجية تحليل ${t?.category}.` };
   });
   const indRows = analysis.tables.indicators.rows.map(r => {
     const t = INDICATORS.find(x => x.id === r.id);
-    return { ...r, category: t?.category, tier: t?.tier as any };
+    return { ...r, category: t?.category, tier: t?.tier as any, description: `${t?.nameAr} — مؤشر ${t?.category}. يُحسب رياضيًا من الأسعار التاريخية.` };
   });
 
   return (
     <>
       <Header variant="app"/>
-      <main className="max-w-[1500px] mx-auto px-3 md:px-5 py-5 space-y-5">
-        <StatsBar/>
-        <ChartPanel symbol={asset.symbol}/>
-        <Table1Options/>
-        <Table2Fundamental asset={asset.symbol}/>
+      <main className="max-w-[1600px] mx-auto px-3 md:px-5 py-5 space-y-5">
+        <TradingViewChart symbol={options.asset} interval={options.tf}/>
+        <Table1Options onChange={(s) => setOptions(s)}/>
+        <Table2Fundamental asset={options.asset}/>
 
-        <TableShell number={3} title="جدول ٣ — الأدوات الرئيسية الأساسية" weight="30%" subtitle="23 أداة • التحليل الفني الأساسي">
-          <RowVoteTable rows={coreRows} weightLabel="30%"/>
+        <TableShell number={3} title="جدول ٣ — التحليل الفني / الأدوات الرئيسية الأساسية" weight="30%" subtitle="23 أداة • التحليل الفني الأساسي">
+          <RowVoteTable rows={coreRows} weightLabel="30%" totalWeightPct={30}/>
         </TableShell>
 
-        <TableShell number={4} title="جدول ٤ — جميع المدارس الفنية" weight="25%" subtitle="48 مدرسة • حصر شامل لكل مدارس التحليل الفني العالمي">
-          <RowVoteTable rows={schoolRows} weightLabel="25%"/>
+        <TableShell number={4} title="جدول ٤ — جميع مدارس التحليل الفني" weight="25%" subtitle="48 مدرسة • حصر شامل لكل مدارس التحليل الفني العالمي">
+          <RowVoteTable rows={schoolRows} weightLabel="25%" totalWeightPct={25}/>
         </TableShell>
 
-        <TableShell number={5} title="جدول ٥ — المؤشرات الفنية" weight="10%" subtitle="54 مؤشر • Trend / Momentum / Volatility / Volume / Composite">
-          <RowVoteTable rows={indRows} weightLabel="10%"/>
+        <TableShell number={5} title="جدول ٥ — التحليل الفني / المؤشرات الفنية" weight="10%" subtitle="54 مؤشر • Trend / Momentum / Volatility / Volume / Composite">
+          <RowVoteTable rows={indRows} weightLabel="10%" totalWeightPct={10}/>
         </TableShell>
 
         <Table6OrderFlow rows={analysis.tables.orderFlow.rows}/>
@@ -73,14 +72,14 @@ export default function DashboardPage() {
         <Table7Final summaries={analysis.tables} confluence={analysis.confluence}/>
 
         <Table8Plan
-          asset={asset.symbol}
+          asset={options.asset}
           lots={sizing.lots}
           levels={levels}
-          capital={10000}
-          riskPct={2}
+          capital={options.capital}
+          riskPct={options.riskPct}
           riskAmount={sizing.riskAmount}
-          mode="BOT"
-          tf="15M"
+          mode={options.mode}
+          tf={options.tf}
           direction={direction}
         />
       </main>

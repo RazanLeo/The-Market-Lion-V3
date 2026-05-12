@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Brand } from "@/components/Brand";
+import { LionMark } from "@/components/LionMark";
 import { LogIn } from "lucide-react";
 
 export const metadata = { title: "تسجيل الدخول — The Market Lion" };
@@ -9,10 +10,11 @@ export default function LoginPage() {
     <main className="min-h-screen grid place-items-center px-4 py-10">
       <div className="w-full max-w-md gold-card p-8 shadow-gold">
         <div className="flex justify-center mb-6"><Brand size={48} /></div>
-        <h1 className="text-center text-2xl font-display gold-text mb-1">تسجيل الدخول</h1>
-        <p className="text-center text-zinc-400 text-sm mb-6">مرحبًا بعودتك إلى أسد السوق 🦁</p>
+        <h1 className="text-center text-2xl font-display gold-text mb-1 flex items-center justify-center gap-2">
+          <LionMark size={26}/> تسجيل الدخول
+        </h1>
+        <p className="text-center text-zinc-400 text-sm mb-6">مرحبًا بعودتك إلى أسد السوق</p>
         <form action="/api/auth/callback/credentials" method="post" className="space-y-4">
-          <input type="hidden" name="csrfToken" />
           <div>
             <label className="text-sm text-gold-400 mb-1 block">البريد الإلكتروني</label>
             <input name="email" type="email" required placeholder="you@example.com"
