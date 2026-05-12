@@ -12,26 +12,23 @@ const TV_SYMBOL: Record<string, string> = {
   "AUD/USD": "FX:AUDUSD",
   "NZD/USD": "FX:NZDUSD",
 };
-
 const TV_INTERVAL: Record<string, string> = {
   "1M":"1","5M":"5","15M":"15","30M":"30","1H":"60","4H":"240",
 };
 
-/**
- * TradingViewChart — uses the official Advanced Chart Widget (free, embeddable).
- * It renders a real, live TradingView chart, exactly like opening tradingview.com.
- */
-export function TradingViewChart({ symbol = "XAU/USD", interval = "15M", height = 520 }:
+/** Big banner-style TradingView Advanced Chart Widget. */
+export function TradingViewChart({ symbol = "XAU/USD", interval = "15M", height = 720 }:
   { symbol?: string; interval?: string; height?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
     containerRef.current.innerHTML = "";
-    const div = document.createElement("div");
-    div.className = "tradingview-widget-container__widget";
-    div.style.height = "100%";
-    containerRef.current.appendChild(div);
+    const widgetDiv = document.createElement("div");
+    widgetDiv.className = "tradingview-widget-container__widget";
+    widgetDiv.style.height = "100%";
+    widgetDiv.style.width = "100%";
+    containerRef.current.appendChild(widgetDiv);
 
     const script = document.createElement("script");
     script.type = "text/javascript";
@@ -46,18 +43,20 @@ export function TradingViewChart({ symbol = "XAU/USD", interval = "15M", height 
       locale: "en",
       backgroundColor: "rgba(10,10,10,1)",
       gridColor: "rgba(212,175,55,0.06)",
+      toolbar_bg: "rgba(10,10,10,1)",
       hide_top_toolbar: false,
+      hide_side_toolbar: false,
       hide_legend: false,
+      hide_volume: false,
       enable_publishing: false,
       allow_symbol_change: true,
       autosize: true,
-      studies: [
-        "STD;EMA",
-        "MASimple@tv-basicstudies",
-        "Volume@tv-basicstudies",
-        "RSI@tv-basicstudies",
-      ],
-      support_host: "https://www.tradingview.com"
+      withdateranges: true,
+      details: true,
+      hotlist: true,
+      calendar: true,
+      studies: ["STD;EMA","MASimple@tv-basicstudies","Volume@tv-basicstudies","RSI@tv-basicstudies"],
+      support_host: "https://www.tradingview.com",
     });
     containerRef.current.appendChild(script);
 
@@ -65,12 +64,8 @@ export function TradingViewChart({ symbol = "XAU/USD", interval = "15M", height 
   }, [symbol, interval]);
 
   return (
-    <div className="gold-card p-2">
-      <div ref={containerRef} className="tradingview-widget-container" style={{ height, width: "100%" }}>
-      </div>
-      <div className="px-3 py-1.5 text-[10px] text-zinc-500 text-center">
-        Powered by TradingView • Real-time chart
-      </div>
+    <div className="rounded-2xl border border-gold-500/30 shadow-gold overflow-hidden bg-bg-card">
+      <div ref={containerRef} className="tradingview-widget-container" style={{ height, width: "100%" }}/>
     </div>
   );
 }

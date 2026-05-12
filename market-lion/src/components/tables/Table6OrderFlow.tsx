@@ -60,13 +60,10 @@ export function Table6OrderFlow({ rows }: { rows: RowReport[] }) {
             <tr key={w.id}>
               <td className="text-zinc-400">{w.id}</td>
               <td className="font-semibold">{w.nameAr}</td>
-              <td className="text-zinc-300 max-w-md">
-                <div className="flex items-center gap-2">
-                  <span className="line-clamp-2">{w.examples.join(" · ")}</span>
-                  <InfoButton title={w.nameAr} dense>
-                    {`فئة: ${w.nameAr}\n\nأبرز المؤسسات تحت هذه الفئة:\n${w.examples.map(e => "• " + e).join("\n")}\n\nيرصد البوت لحظيًا حجم صفقات هذه المؤسسات وفقًا لتقارير COT والتسريبات السوقية وداتا Bookmap.`}
-                  </InfoButton>
-                </div>
+              <td className="text-center">
+                <InfoButton title={`أبرز المؤسسات في فئة: ${w.nameAr}`}>
+                  {`الفئة: ${w.nameAr}\n\nأبرز المؤسسات:\n${w.examples.map(e => "• " + e).join("\n")}\n\nيرصد البوت لحظياً حجم صفقات هذه المؤسسات عبر:\n- تقارير COT الأسبوعية من CFTC\n- بيانات Bookmap للـ Order Book\n- ETF Flows من WGC\n- إيداعات 13F من SEC.`}
+                </InfoButton>
               </td>
               <td className="text-center text-zinc-300">—</td>
               <td className="text-center text-zinc-300">—</td>
@@ -131,11 +128,8 @@ export function Table6OrderFlow({ rows }: { rows: RowReport[] }) {
                 <td className="text-zinc-400">{tool.id}</td>
                 <td className="font-semibold">{tool.nameAr}</td>
                 <td><TierChip tier={tool.tier}/></td>
-                <td className="text-zinc-300 max-w-md">
-                  <div className="flex items-center gap-2">
-                    <span className="line-clamp-2">{expl.slice(0, 90)}…</span>
-                    <InfoButton title={tool.nameAr} dense>{expl}</InfoButton>
-                  </div>
+                <td className="text-center">
+                  <InfoButton title={`شرح الأداة: ${tool.nameAr}`}>{expl}</InfoButton>
                 </td>
                 {TIMEFRAMES.map(tf => (
                   <td key={tf} className="text-center">

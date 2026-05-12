@@ -51,7 +51,7 @@ export default function DashboardPage() {
     <>
       <Header variant="app"/>
       <main className="max-w-[1600px] mx-auto px-3 md:px-5 py-5 space-y-5">
-        <TradingViewChart symbol={options.asset} interval={options.tf}/>
+        <TradingViewChart symbol={options.asset} interval={options.tf} height={720}/>
         <Table1Options onChange={(s) => setOptions(s)}/>
         <Table2Fundamental asset={options.asset}/>
 
