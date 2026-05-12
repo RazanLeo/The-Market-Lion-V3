@@ -17,7 +17,7 @@ export const DECISION_THRESHOLD = {
 
 // Final decision tiers (from Table 7)
 export const SIGNAL_TIERS = {
-  CROWN:   { min: 80, label: "👑 Crown", labelAr: "إشارة تاج" },
+  CROWN:   { min: 80, label: "Crown", labelAr: "إشارة تاج" },
   STRONG:  { min: 60, label: "🟢 Strong", labelAr: "إشارة قوية" },
   WEAK:    { min: 30, label: "🟡 Weak", labelAr: "إشارة ضعيفة" },
   NONE:    { min: 0,  label: "⚪ None", labelAr: "لا إشارة" },
