@@ -2,14 +2,14 @@
 // Each entry: unique strategy text, calculation formula, algorithm pseudocode.
 // NO copy-paste between rows.
 export type KBEntry = {
-  id: number;
+  id?: number;
   strategy: string;     // Specific strategy paragraph (unique per tool)
   calculation: string;  // Math formula text
   algorithm: string;    // Pseudocode (short)
   example: string;      // Concrete numeric example
 };
 
-export const CORE_TOOLS_KB: Record<number, KBEntry> = {
+export const CORE_TOOLS_KB: Record<number, Omit<KBEntry, "id">> = {
   1: {
     strategy: "هيكل السوق (Market Structure) يحدّد الاتجاه عبر القمم والقيعان: قمم وقيعان أعلى (HH/HL) = اتجاه صاعد، قمم وقيعان أدنى (LH/LL) = اتجاه هابط. يُكسر الاتجاه بـ BOS (Break of Structure) ويُعكس بـ CHoCH (Change of Character). EQH/EQL تشير إلى سيولة مُتراكمة سيتم سحبها لاحقاً.",
     calculation: "Pivot[i] = High[i] إذا كان أعلى من 5 شموع يمين وشمال • HH = Pivot.High > Pivot.High[الأخيرة] • LL = Pivot.Low < Pivot.Low[الأخيرة].",
