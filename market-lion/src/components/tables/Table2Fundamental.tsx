@@ -15,26 +15,22 @@ type ApiResp = {
 };
 
 function ImportancePill({ importance }: { importance: string }) {
+  const { t } = useI18n();
   const map: any = {
     VERY_HIGH: "bg-red-500/20 text-red-300 ring-red-500/40",
     HIGH:      "bg-amber-500/20 text-amber-300 ring-amber-500/40",
     MEDIUM:    "bg-sky-500/15 text-sky-300 ring-sky-500/30",
     LOW:       "bg-zinc-500/15 text-zinc-300 ring-zinc-500/30",
   };
-  const txt = (importance: string) => {
-    if (typeof window === "undefined") return importance;
-    const loc = (typeof localStorage !== "undefined" && localStorage.getItem("ml.locale")) || "ar";
-    const ar: any = { VERY_HIGH: "عالي جدًا", HIGH: "عالي", MEDIUM: "متوسط", LOW: "منخفض" };
-    const en: any = { VERY_HIGH: "Very High", HIGH: "High", MEDIUM: "Medium", LOW: "Low" };
-    return (loc === "ar" ? ar : en)[importance] || importance;
-  };
-  return <span className={`chip ring-1 ${map[importance] || map.LOW}`}>{txt(importance)}</span>;
+  const labels: any = { VERY_HIGH: t("common.very_high"), HIGH: t("common.high"), MEDIUM: t("common.medium"), LOW: t("common.low") };
+  return <span className={`chip ring-1 ${map[importance] || map.LOW}`}>{labels[importance] || importance}</span>;
 }
 
-function tfCell(votes: Record<string, number> | undefined, tf: string) {
+function TfCell({ votes, tf }: { votes: Record<string, number> | undefined; tf: string }) {
+  const { t } = useI18n();
   const v = votes?.[tf] ?? 0;
-  if (v === 1) return <span className="text-green-400 font-bold">شراء</span>;
-  if (v === -1) return <span className="text-red-400 font-bold">بيع</span>;
+  if (v === 1) return <span className="text-green-400 font-bold">{t("common.buy")}</span>;
+  if (v === -1) return <span className="text-red-400 font-bold">{t("common.sell")}</span>;
   return <span className="text-zinc-500">—</span>;
 }
 
@@ -81,7 +77,7 @@ export function Table2Fundamental({ asset }: { asset: string }) {
       weight="20%">
 
       {/* Section 1 — Economic Indicators (40 rows) */}
-      <h4 className="text-gold-400 font-bold mb-2 mt-2">{t("tables.t2.sec1")} — 40 مؤشر اقتصادي • {data ? "متّصل لحظيًا ✓" : "جاري الاتصال…"}</h4>
+      <h4 className="text-gold-400 font-bold mb-2 mt-2">{t("tables.t2.sec1")} — 40 مؤشر اقتصادي • {data ? "متّصل لحظيًا ✓" : t("common.loading")}</h4>
       <table className="tbl">
         <thead>
           <tr>
@@ -95,7 +91,7 @@ export function Table2Fundamental({ asset }: { asset: string }) {
             <th>{t("common.actual")}</th>
             <th>{t("common.importance")}</th>
             <th>{t("common.source")}</th>
-            <th>نتيجة التحليل الشامل المفصل</th>
+            <th>{t("t2.col.detailed_result")}</th>
             <th>{t("common.result")}</th>
             {TF.map(tf => <th key={tf} className="text-center">{tf}</th>)}
             <th>{t("common.weighted_score")}</th>
@@ -121,10 +117,10 @@ export function Table2Fundamental({ asset }: { asset: string }) {
                 <td><ImportancePill importance={row.importance}/></td>
                 <td className="text-zinc-400">{row.source}</td>
                 <td className="text-center">
-                  <InfoButton title={`التحليل المفصل — ${row.indicator}`}>{narrative}</InfoButton>
+                  <InfoButton title={`${t("common.detailed_analysis")} — ${row.indicator}`}>{narrative}</InfoButton>
                 </td>
                 <td><DecisionPill d={dir as any}/></td>
-                {TF.map(tf => <td key={tf} className="text-center">{tfCell(live?.votes, tf)}</td>)}
+                {TF.map(tf => <td key={tf} className="text-center"><TfCell votes={live?.votes} tf={tf}/></td>)}
                 <td className="text-center text-zinc-300">{live ? (pol * 0.005).toFixed(3) : "—"}</td>
                 <td className="text-center text-gold-400">{live ? ((Math.abs(pol)/40)*20).toFixed(2) + "%" : "—"}</td>
               </tr>
@@ -140,13 +136,13 @@ export function Table2Fundamental({ asset }: { asset: string }) {
           <tr>
             <th>#</th>
             <th>{t("common.asset")}</th>
-            <th>الخبر / التقرير</th>
-            <th>التاريخ</th>
+            <th>{t("t2.col.news")}</th>
+            <th>{t("common.date")}</th>
             <th>{t("common.time_utc")}</th>
             <th>{t("common.time_local")}</th>
             <th>{t("common.source")}</th>
             <th>{t("common.importance")}</th>
-            <th>نتيجة التحليل الشامل المفصل</th>
+            <th>{t("t2.col.detailed_result")}</th>
             <th>{t("common.result")}</th>
             {TF.map(tf => <th key={tf} className="text-center">{tf}</th>)}
             <th>{t("common.weighted_score")}</th>
@@ -170,10 +166,10 @@ export function Table2Fundamental({ asset }: { asset: string }) {
                 <td className="text-zinc-400">{row.source}</td>
                 <td><ImportancePill importance={row.importance}/></td>
                 <td className="text-center">
-                  <InfoButton title={`التحليل المفصل — ${row.story}`}>{narrative}</InfoButton>
+                  <InfoButton title={`${t("common.detailed_analysis")} — ${row.story}`}>{narrative}</InfoButton>
                 </td>
                 <td><DecisionPill d={dir as any}/></td>
-                {TF.map(tf => <td key={tf} className="text-center">{tfCell(live?.votes, tf)}</td>)}
+                {TF.map(tf => <td key={tf} className="text-center"><TfCell votes={live?.votes} tf={tf}/></td>)}
                 <td className="text-center text-zinc-300">{live ? (pol * 0.005).toFixed(3) : "—"}</td>
                 <td className="text-center text-gold-400">{live ? ((Math.abs(pol)/12)*20).toFixed(2) + "%" : "—"}</td>
               </tr>
@@ -189,11 +185,11 @@ export function Table2Fundamental({ asset }: { asset: string }) {
           <tr>
             <th>#</th>
             <th>{t("common.asset")}</th>
-            <th>الخطاب / التصريح / التغريدة</th>
-            <th>التاريخ</th>
+            <th>{t("t2.col.statement")}</th>
+            <th>{t("common.date")}</th>
             <th>{t("common.time_utc")}</th>
-            <th>المتحدث</th>
-            <th>المنصة</th>
+            <th>{t("t2.col.speaker")}</th>
+            <th>{t("t2.col.platform")}</th>
             <th>{t("common.importance")}</th>
             <th>التحليل المفصل + النص الأصلي</th>
             <th>{t("common.result")}</th>
@@ -223,7 +219,7 @@ export function Table2Fundamental({ asset }: { asset: string }) {
                   <InfoButton title={`${row.event} — ${row.speaker}`}>{text}</InfoButton>
                 </td>
                 <td><DecisionPill d={dir as any}/></td>
-                {TF.map(tf => <td key={tf} className="text-center">{tfCell(live?.votes, tf)}</td>)}
+                {TF.map(tf => <td key={tf} className="text-center"><TfCell votes={live?.votes} tf={tf}/></td>)}
                 <td className="text-center text-zinc-300">{live ? (pol * 0.005).toFixed(3) : "—"}</td>
                 <td className="text-center text-gold-400">{live ? ((Math.abs(pol)/12)*20).toFixed(2) + "%" : "—"}</td>
               </tr>

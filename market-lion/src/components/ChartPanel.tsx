@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 
 export function ChartPanel({ symbol = "XAU/USD" }: { symbol?: string }) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!containerRef.current) return;
@@ -38,8 +40,8 @@ export function ChartPanel({ symbol = "XAU/USD" }: { symbol?: string }) {
   return (
     <div className="gold-card p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-gold-400 font-bold">📈 شارت {symbol} — لحظي</h3>
-        <div className="text-xs text-zinc-400">المؤشرات والمدارس والأدوات تُرسم على هذا الشارت من جداول التحليل</div>
+        <h3 className="text-gold-400 font-bold">{t("chart.title")} {symbol} — {t("chart.live")}</h3>
+        <div className="text-xs text-zinc-400">{t("chart.subtitle")}</div>
       </div>
       <div ref={containerRef} className="h-[400px] w-full"></div>
     </div>

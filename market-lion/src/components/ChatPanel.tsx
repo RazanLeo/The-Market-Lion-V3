@@ -9,9 +9,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 export function ChatPanel({ context }: { context: any }) {
   const { t, locale } = useI18n();
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: locale === "ar"
-        ? "مرحبًا 👋 أنا أسد السوق GPT — مساعدك المالي. اسألني عن أي شيء في الجداول، القرار النهائي، خطة التداول، أو أي مدرسة/أداة/مؤشر."
-        : "Hello 👋 I'm Market Lion GPT — your financial assistant. Ask me anything about the tables, the final decision, the trade plan, or any school/tool/indicator." }
+    { role: "assistant", content: t("chat.greeting_ar") }
   ]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,9 +30,9 @@ export function ChatPanel({ context }: { context: any }) {
         body: JSON.stringify({ messages: next, context }),
       });
       const data = await r.json();
-      setMessages(m => [...m, { role: "assistant", content: data?.content || (locale === "ar" ? "تعذّر الرد." : "Could not reply.") }]);
+      setMessages(m => [...m, { role: "assistant", content: data?.content || t("chat.error") }]);
     } catch {
-      setMessages(m => [...m, { role: "assistant", content: locale === "ar" ? "خطأ في الاتصال." : "Connection error." }]);
+      setMessages(m => [...m, { role: "assistant", content: t("chat.connection_error") }]);
     } finally { setBusy(false); }
   }
 
@@ -44,10 +42,10 @@ export function ChatPanel({ context }: { context: any }) {
         <LionMark size={28}/>
         <div>
           <h3 className="text-gold-400 font-bold">
-            {locale === "ar" ? "💬 شات أسد السوق GPT المالي" : "💬 Market Lion GPT — Financial Chat"}
+            {t("chat.title")}
           </h3>
           <p className="text-[11px] text-zinc-400">
-            {locale === "ar" ? "مساعد ذكاء اصطناعي مخصص للتداول — يحلل الجداول وكل ما يحدث على الشارت" : "AI assistant for trading — analyzes tables and live chart events"}
+            {t("chat.subtitle")}
           </p>
         </div>
       </header>
@@ -68,7 +66,7 @@ export function ChatPanel({ context }: { context: any }) {
           <div className="flex justify-start">
             <div className="rounded-2xl px-4 py-2.5 text-sm bg-bg-card border border-line flex items-center gap-2 text-zinc-400">
               <Loader2 className="animate-spin" size={14}/>
-              {locale === "ar" ? "أسد السوق يفكر…" : "Thinking…"}
+              {t("chat.thinking")}
             </div>
           </div>
         )}
@@ -79,12 +77,12 @@ export function ChatPanel({ context }: { context: any }) {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder={locale === "ar" ? "اسألني عن أي شيء في المنصة…" : "Ask me anything about the platform…"}
+          placeholder={t("chat.placeholder")}
           className="flex-1 bg-bg-card border border-gold-500/25 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-gold-500/40"
         />
         <button onClick={send} disabled={busy || !input.trim()}
           className="btn-gold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5">
-          <Send size={16}/>{locale === "ar" ? "إرسال" : "Send"}
+          <Send size={16}/>{t("chat.send")}
         </button>
       </div>
     </section>

@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 import { TRADE_PLAN } from "@/data/tradePlan";
 import { TableShell } from "./TableShell";
 import type { TradeLevels } from "@/lib/tradePlan";
+import { useI18n } from "@/i18n/I18nProvider";
 
 function drawHLine(price: number, color: string, text: string) {
   (window as any).mlTVDrawHLine?.(price, color, text);
@@ -23,6 +24,7 @@ const LINE_META: Record<number, { color: string; label: string }> = {
 export function Table8Plan({ asset, lots, levels, capital, riskPct, riskAmount, leverage = 500, mode, tf, direction }:
   { asset: string; lots: number; levels: TradeLevels; capital: number; riskPct: number; riskAmount: number; leverage?: number; mode: "BOT"|"MANUAL"; tf: string; direction: "BUY"|"SELL"|"NEUTRAL" }) {
 
+  const { t } = useI18n();
   const [active, setActive] = useState<Record<number, boolean>>(() => {
     const d: Record<number, boolean> = {};
     TRADE_PLAN.forEach(p => { d[p.id] = !!p.defaultOnChart; });
@@ -52,7 +54,7 @@ export function Table8Plan({ asset, lots, levels, capital, riskPct, riskAmount, 
     9: (capital / Math.max(lots * 100000 / leverage, 1) * 100).toFixed(0) + "%",
     10: "Forex / Metals / Energy (CFD)",
     11: asset,
-    12: mode === "BOT" ? "البوت الآلي" : "التداول اليدوي",
+    12: mode === "BOT" ? t("mode.bot") : t("mode.manual"),
     13: tf,
     14: direction === "BUY" ? "Buy 🟢" : direction === "SELL" ? "Sell 🔴" : "—",
     15: levels.entry.toFixed(4),
@@ -67,15 +69,15 @@ export function Table8Plan({ asset, lots, levels, capital, riskPct, riskAmount, 
     30: riskAmount.toFixed(2) + " $",
     31: "—", 32: "—", 33: "—",
     34: (Math.abs(levels.tp4 - levels.entry) / Math.abs(levels.entry - levels.sl)).toFixed(2),
-    35: "PDF يومي", 36: "PDF أسبوعي", 37: "PDF شهري + ضرائب الأرباح",
+    35: "PDF " + t("reports.daily"), 36: "PDF " + t("reports.weekly"), 37: "PDF " + t("reports.monthly"),
   };
 
   return (
-    <TableShell number={8} title="جدول ٨ — خطة التداول والمخاطرة" subtitle="كل بند له زر تشغيل/إيقاف للرسم على الشارت — يتحدث لحظيًا مع نتائج التحليل والقرار النهائي">
+    <TableShell number={8} title={t("t8.title")} subtitle={t("t8.subtitle")}>
       <div className="overflow-x-auto -mx-3 px-3">
         <table className="tbl">
           <thead>
-            <tr><th>#</th><th>البند</th><th>القيمة</th><th>الشرح / كيف يُحسب</th><th>🎨 على الشارت</th></tr>
+            <tr><th>{t("t8.col.num")}</th><th>{t("t8.col.item")}</th><th>{t("t8.col.value")}</th><th>{t("t8.col.explanation")}</th><th>{t("t8.col.draw_chart")}</th></tr>
           </thead>
           <tbody>
             {TRADE_PLAN.map(p => (

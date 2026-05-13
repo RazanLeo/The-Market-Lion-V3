@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { TIMEFRAMES, type Timeframe } from "@/data/timeframes";
 import { DecisionPill, TierChip } from "./TableShell";
 import { InfoButton } from "../InfoModal";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { RowReport } from "@/lib/analysisEngine";
 
 export type EnrichedRow = RowReport & {
@@ -78,6 +79,7 @@ function computeSummary(rows: EnrichedRow[]) {
 
 export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
   { rows: EnrichedRow[]; weightLabel: string; totalWeightPct: number }) {
+  const { t } = useI18n();
   const summary = computeSummary(rows);
 
   return (
@@ -85,16 +87,16 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
       <table className="tbl">
         <thead>
           <tr>
-            <th>الرقم</th>
-            <th>الأداة / المدرسة / المؤشر</th>
-            <th>التصنيف</th>
-            <th>شرح الأداة</th>
+            <th>{t("vote.col.num")}</th>
+            <th>{t("vote.col.tool")}</th>
+            <th>{t("vote.col.category")}</th>
+            <th>{t("vote.col.explanation")}</th>
             {TIMEFRAMES.map(tf => <th key={tf} className="text-center">{tf}</th>)}
-            <th>توافق الأطر</th>
-            <th>الوزن من {weightLabel}</th>
-            <th>درجة الثقة</th>
-            <th>نتيجة التحليل</th>
-            <th className="text-center text-[11px]">شارت</th>
+            <th>{t("vote.col.tf_alignment")}</th>
+            <th>{t("vote.col.weight_of")} {weightLabel}</th>
+            <th>{t("vote.col.confidence")}</th>
+            <th>{t("vote.col.result")}</th>
+            <th className="text-center text-[11px]">{t("vote.col.chart")}</th>
           </tr>
         </thead>
         <tbody>
@@ -113,15 +115,15 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
                 </td>
                 <td className="text-zinc-400 text-xs">{r.category || "—"}</td>
                 <td className="text-center">
-                  <InfoButton title={`شرح الأداة: ${r.nameAr}`}>
+                  <InfoButton title={`${t("vote.col.explanation")}: ${r.nameAr}`}>
                     {r.description ||
-                     `الأداة: ${r.nameAr}\nالتصنيف: ${r.category || "—"}\n\nالشرح الكامل لهذه الأداة واستراتيجيتها.`}
+                     `${t("vote.col.tool")}: ${r.nameAr}\n${t("vote.col.category")}: ${r.category || "—"}\n\n${t("vote.info.fallback")}`}
                   </InfoButton>
                 </td>
                 {TIMEFRAMES.map(tf => (
                   <td key={tf} className="text-center">
-                    {r.decision.perTf[tf] === 1  ? <span className="text-green-400 font-bold text-xs">شراء</span>
-                     : r.decision.perTf[tf] === -1 ? <span className="text-red-400 font-bold text-xs">بيع</span>
+                    {r.decision.perTf[tf] === 1  ? <span className="text-green-400 font-bold text-xs">{t("common.buy")}</span>
+                     : r.decision.perTf[tf] === -1 ? <span className="text-red-400 font-bold text-xs">{t("common.sell")}</span>
                      : <span className="text-zinc-500 text-xs">—</span>}
                   </td>
                 ))}
@@ -139,12 +141,12 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
                 <td className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     <DecisionPill d={r.decision.decision}/>
-                    <InfoButton title={`نتيجة التحليل — ${r.nameAr}`} dense>
+                    <InfoButton title={`${t("vote.col.result")} — ${r.nameAr}`} dense>
                       {`${r.nameAr}\n\n` +
-                       `الدرجة الموزونة: ${r.decision.weighted.toFixed(3)}\n` +
-                       `الثقة: ${(r.decision.confidence*100).toFixed(1)}٪\n` +
-                       `التوافق: ${(r.decision.alignment*100).toFixed(0)}٪\n` +
-                       `شراء: ${buyCount} • بيع: ${sellCount} • محايد: ${neutralCount}\n\n` +
+                       `${t("vote.info.weighted_score")}: ${r.decision.weighted.toFixed(3)}\n` +
+                       `${t("vote.col.confidence")}: ${(r.decision.confidence*100).toFixed(1)}%\n` +
+                       `${t("vote.col.tf_alignment")}: ${(r.decision.alignment*100).toFixed(0)}%\n` +
+                       `${t("common.buy")}: ${buyCount} • ${t("common.sell")}: ${sellCount} • ${t("common.neutral")}: ${neutralCount}\n\n` +
                        `((1M×5)+(5M×10)+(15M×20)+(30M×18)+(1H×22)+(4H×25))÷100`}
                     </InfoButton>
                   </div>
@@ -161,7 +163,7 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
         <tfoot>
           <tr className="bg-zinc-900/60 border-t-2 border-gold-500/40">
             <td colSpan={4} className="font-bold text-gold-400 text-xs text-center py-2">
-              🎯 القرار النهائي للجدول — الوزن {totalWeightPct}٪
+              {t("vote.footer.title")} — {t("vote.footer.weight")} {totalWeightPct}%
             </td>
             {TIMEFRAMES.map(tf => (
               <td key={tf} className="text-center py-2 text-xs font-bold text-zinc-300">{tf}</td>
@@ -170,7 +172,7 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
           </tr>
 
           <tr className="bg-zinc-900/40 text-xs">
-            <td colSpan={4} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">مجموع أوزان الشراء</td>
+            <td colSpan={4} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">{t("vote.footer.buy_weights")}</td>
             {summary.map(s => (
               <td key={s.tf} className="text-center text-green-400 font-mono">{s.buyW.toFixed(3)}</td>
             ))}
@@ -178,7 +180,7 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
           </tr>
 
           <tr className="bg-zinc-900/40 text-xs">
-            <td colSpan={4} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">مجموع أوزان البيع</td>
+            <td colSpan={4} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">{t("vote.footer.sell_weights")}</td>
             {summary.map(s => (
               <td key={s.tf} className="text-center text-red-400 font-mono">{s.sellW.toFixed(3)}</td>
             ))}
@@ -186,7 +188,7 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
           </tr>
 
           <tr className="bg-zinc-900/40 text-xs">
-            <td colSpan={4} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">صافي الدرجة</td>
+            <td colSpan={4} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">{t("vote.footer.net")}</td>
             {summary.map(s => (
               <td key={s.tf} className={`text-center font-mono font-bold ${s.net > 0 ? "text-green-400" : s.net < 0 ? "text-red-400" : "text-zinc-400"}`}>
                 {s.net >= 0 ? "+" : ""}{s.net.toFixed(3)}
@@ -196,19 +198,19 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
           </tr>
 
           <tr className="bg-gold-500/8 text-xs border-t border-gold-500/20">
-            <td colSpan={4} className="text-gold-400 py-2 pe-2 text-end font-bold">القرار النهائي</td>
+            <td colSpan={4} className="text-gold-400 py-2 pe-2 text-end font-bold">{t("vote.footer.final_decision")}</td>
             {summary.map(s => (
               <td key={s.tf} className="text-center py-2">
-                {s.dec === "BUY"  ? <span className="chip-buy text-[10px]">شراء 🟢</span>
-                 : s.dec === "SELL" ? <span className="chip-sell text-[10px]">بيع 🔴</span>
-                 : <span className="chip-neutral text-[10px]">محايد ⚪</span>}
+                {s.dec === "BUY"  ? <span className="chip-buy text-[10px]">{t("common.buy")} 🟢</span>
+                 : s.dec === "SELL" ? <span className="chip-sell text-[10px]">{t("common.sell")} 🔴</span>
+                 : <span className="chip-neutral text-[10px]">{t("common.neutral")} ⚪</span>}
               </td>
             ))}
             <td colSpan={4}></td>
           </tr>
 
           <tr className="bg-zinc-900/40 text-xs border-b border-gold-500/20">
-            <td colSpan={4} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">درجة الثقة (%)</td>
+            <td colSpan={4} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">{t("vote.footer.confidence_pct")}</td>
             {summary.map(s => (
               <td key={s.tf} className="text-center text-gold-400 font-mono">{(s.conf*100).toFixed(1)}%</td>
             ))}
@@ -222,6 +224,7 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
 
 // Actual TradingView chart toggle — adds/removes the indicator on the live chart
 function ChartToggle({ nameEn, label }: { nameEn: string; label: string }) {
+  const { t } = useI18n();
   const [on, setOn] = useState(false);
   const [entityId, setEntityId] = useState<string | null>(null);
   const studyKey = TV_STUDY[nameEn] || null;
@@ -257,14 +260,14 @@ function ChartToggle({ nameEn, label }: { nameEn: string; label: string }) {
   if (!studyKey) {
     // No TV equivalent — show disabled toggle with tooltip
     return (
-      <span className="inline-flex w-9 h-5 rounded-full bg-zinc-800 opacity-30 cursor-not-allowed" title={`${label} — غير متاح على TradingView`}/>
+      <span className="inline-flex w-9 h-5 rounded-full bg-zinc-800 opacity-30 cursor-not-allowed" title={`${label} — ${t("vote.chart.unavailable")}`}/>
     );
   }
 
   return (
     <button
       onClick={toggle}
-      title={on ? `إيقاف ${label} من الشارت` : `رسم ${label} على الشارت`}
+      title={on ? `${t("vote.chart.off")} ${label}` : `${t("vote.chart.on")} ${label}`}
       className={`w-9 h-5 rounded-full relative transition-all duration-200 focus:outline-none
         ${on ? "bg-gold-500" : "bg-zinc-700"}`}
     >

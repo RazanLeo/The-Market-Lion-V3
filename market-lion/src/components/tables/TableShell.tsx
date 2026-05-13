@@ -1,8 +1,11 @@
+"use client";
 import { ReactNode } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 
 export function TableShell({
   number, title, subtitle, weight, badge, children,
 }: { number: number; title: string; subtitle?: string; weight?: string; badge?: string; children: ReactNode }) {
+  const { t } = useI18n();
   return (
     <section className="gold-card p-4 md:p-6">
       <header className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -14,7 +17,7 @@ export function TableShell({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {weight && <span className="chip-tier-S">الوزن: {weight}</span>}
+          {weight && <span className="chip-tier-S">{t("shell.weight")}: {weight}</span>}
           {badge && <span className="chip chip-neutral">{badge}</span>}
         </div>
       </header>
@@ -26,9 +29,10 @@ export function TableShell({
 }
 
 export function DecisionPill({ d }: { d: "BUY"|"SELL"|"NEUTRAL" }) {
-  if (d === "BUY")  return <span className="chip-buy">شراء 🟢</span>;
-  if (d === "SELL") return <span className="chip-sell">بيع 🔴</span>;
-  return <span className="chip-neutral">محايد ⚪</span>;
+  const { t } = useI18n();
+  if (d === "BUY")  return <span className="chip-buy">{t("common.buy")} 🟢</span>;
+  if (d === "SELL") return <span className="chip-sell">{t("common.sell")} 🔴</span>;
+  return <span className="chip-neutral">{t("common.neutral")} ⚪</span>;
 }
 
 const TIER_META: Record<string, { cls: string }> = {

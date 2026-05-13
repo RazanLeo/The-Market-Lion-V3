@@ -1,16 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 
 /**
  * Countdown to a fixed time-of-day (UTC), repeating daily/weekly.
- * If the time has passed today, shows "صدر اليوم — جاري التحديث" or counts to next occurrence.
+ * If the time has passed today, shows t("countdown.released_today") or counts to next occurrence.
  */
 export function Countdown({ utcTime, cadence = "daily" }:
   { utcTime: string; cadence?: "daily" | "weekly" | "monthly" | "live" }) {
+  const { t } = useI18n();
   const [text, setText] = useState("");
 
   useEffect(() => {
-    if (utcTime === "لحظي" || utcTime === "live" || cadence === "live") { setText("لحظي"); return; }
+    if (utcTime === "live" || cadence === "live") { setText(t("chart.live")); return; }
     const m = utcTime.match(/(\d{1,2}):(\d{2})\s*UTC/i);
     if (!m) { setText(utcTime); return; }
     const targetHours = parseInt(m[1], 10);
@@ -31,13 +33,13 @@ export function Countdown({ utcTime, cadence = "daily" }:
       const mn = Math.floor((ms % 3_600_000) / 60_000);
       const s = Math.floor((ms % 60_000) / 1_000);
       if (h === 0 && mn === 0 && s < 60) {
-        setText(`⏱️ ${s} ث`);
+        setText(`⏱️ ${s}s`);
       } else if (h === 0) {
-        setText(`⏱️ ${mn} د`);
+        setText(`⏱️ ${mn}m`);
       } else if (h < 24) {
-        setText(`⏱️ ${h}س ${mn}د`);
+        setText(`⏱️ ${h}h ${mn}m`);
       } else {
-        setText("غدًا");
+        setText(t("countdown.upcoming"));
       }
     }
     tick();
