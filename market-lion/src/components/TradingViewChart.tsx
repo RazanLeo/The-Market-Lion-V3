@@ -91,7 +91,7 @@ export function TradingViewChart({
                 [{ time: Math.floor(Date.now() / 1000), price }],
                 {
                   shape: direction === "BUY" ? "arrow_up" : "arrow_down",
-                  text: label ?? (direction === "BUY" ? "Buy Lion 🦁" : "Sell Lion 🦁"),
+                  text: label ?? (direction === "BUY" ? "Buy Lion" : "Sell Lion"),
                   overrides: {
                     backgroundColor: direction === "BUY" ? "#22c55e" : "#ef4444",
                     color: "#ffffff",

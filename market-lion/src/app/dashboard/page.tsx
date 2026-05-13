@@ -12,6 +12,7 @@ import { RowVoteTable } from "@/components/tables/RowVoteTable";
 import { TableShell } from "@/components/tables/TableShell";
 import { ASSETS } from "@/data/assets";
 import { ChatPanel } from "@/components/ChatPanel";
+import { LionMark } from "@/components/LionMark";
 import { PriceTicker } from "@/components/PriceTicker";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -133,7 +134,7 @@ export default function DashboardPage() {
 
         {loading && (
           <div className="gold-card p-10 text-center">
-            <div className="text-3xl mb-3 animate-pulse">🦁</div>
+            <div className="mb-3 animate-pulse flex justify-center"><LionMark size={48}/></div>
             <div className="text-gold-400 font-bold">⏳ {t("dashboard.loading_title")}</div>
             <div className="text-xs text-zinc-500 mt-2">{t("dashboard.loading_subtitle").replace("{asset}", options.asset)}</div>
           </div>

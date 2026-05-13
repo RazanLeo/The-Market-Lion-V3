@@ -22,7 +22,7 @@ export const TRADE_PLAN: TradePlanItem[] = [
   { id: 11, nameAr: "تحديد الأصل المالي", nameEn: "Asset Selection", group: "Trade", formulaAr: "من جدول 1" },
   { id: 12, nameAr: "نوع التداول (آلي / يدوي)", nameEn: "Trading Mode (Bot/Manual)", group: "Trade", formulaAr: "من جدول 1" },
   { id: 13, nameAr: "الإطار الزمني", nameEn: "Timeframe", group: "Trade", formulaAr: "من جدول 1" },
-  { id: 14, nameAr: "تحديد الصفقة (شراء / بيع)", nameEn: "Direction (Buy/Sell)", group: "Trade", formulaAr: "Buy Lion 🦁 / Sell Lion 🦁 من جدول 7" },
+  { id: 14, nameAr: "تحديد الصفقة (شراء / بيع)", nameEn: "Direction (Buy/Sell)", group: "Trade", formulaAr: "Buy Lion / Sell Lion من جدول 7" },
   { id: 15, nameAr: "🎯 نقطة الدخول", nameEn: "Entry Price", group: "Levels", defaultOnChart: true, formulaAr: "السعر الحالي عند تأكيد القرار من جدول 7" },
   { id: 16, nameAr: "🎯 TP1 (Ratio 1:1) — 25%", nameEn: "TP1 1:1 (25%)", group: "Levels", defaultOnChart: true, formulaAr: "Entry ± (Risk × 1)" },
   { id: 17, nameAr: "🎯 TP2 (Ratio 1:2) — 50%", nameEn: "TP2 1:2 (50%)", group: "Levels", defaultOnChart: true, formulaAr: "Entry ± (Risk × 2)" },
