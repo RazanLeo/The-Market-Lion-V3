@@ -17,7 +17,7 @@ import { PriceTicker } from "@/components/PriceTicker";
 import { useI18n } from "@/i18n/I18nProvider";
 
 export default function DashboardPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [options, setOptions] = useState({
     asset: "XAU/USD", riskPct: 2, capital: 10000, tf: "15M", mode: "BOT" as "BOT"|"MANUAL"
   });
@@ -71,14 +71,14 @@ export default function DashboardPage() {
           const def = defs.find((x: any) => x.id === r.id);
           const kbEntry = kb[r.id];
           const description = kbEntry
-            ? `📚 الاستراتيجية:\n${kbEntry.strategy}\n\n📐 صيغة الحساب:\n${kbEntry.calculation}\n\n⚙️ الخوارزمية:\n${kbEntry.algorithm}\n\n💡 مثال تطبيقي:\n${kbEntry.example}`
+            ? `📚 ${t("kb.strategy")}:\n${kbEntry.strategy}\n\n📐 ${t("kb.calculation")}:\n${kbEntry.calculation}\n\n⚙️ ${t("kb.algorithm")}:\n${kbEntry.algorithm}\n\n💡 ${t("kb.example")}:\n${kbEntry.example}`
             : def?.descriptionAr || `${prefix}${def?.nameAr || r.nameAr}`;
           return { ...r, category: def?.category, description, tier: def?.tier };
         });
 
-      const coreRows  = enrich(analysis.tables.coreTools.rows,  CORE_TOOLS,  CORE_TOOLS_KB, "أداة: ");
-      const schoolRows = enrich(analysis.tables.schools.rows,   SCHOOLS,     SCHOOLS_KB,    "مدرسة: ");
-      const indRows    = enrich(analysis.tables.indicators.rows, INDICATORS,  INDICATORS_KB, "مؤشر: ");
+      const coreRows  = enrich(analysis.tables.coreTools.rows,  CORE_TOOLS,  CORE_TOOLS_KB, "Tool: ");
+      const schoolRows = enrich(analysis.tables.schools.rows,   SCHOOLS,     SCHOOLS_KB,    "School: ");
+      const indRows    = enrich(analysis.tables.indicators.rows, INDICATORS,  INDICATORS_KB, "Indicator: ");
 
       setComputed({ analysis, levels, sizing, coreRows, schoolRows, indRows, direction, lastPrice });
       setLastRefresh(new Date());
@@ -121,12 +121,12 @@ export default function DashboardPage() {
         {/* Status bar */}
         <div className="flex items-center gap-3 text-xs text-zinc-500 bg-zinc-900/50 rounded-lg px-3 py-1.5">
           <span className={`w-2 h-2 rounded-full ${dataSource === "live" ? "bg-green-400 animate-pulse" : "bg-yellow-400"}`}/>
-          <span>{dataSource === "live" ? t("dashboard.data_live") : t("dashboard.data_synthetic")}</span>
+          <span>{dataSource === "live" ? t("dashboard.live_data") : t("dashboard.synthetic_data")}</span>
           {lastRefresh && (
-            <span className="ms-auto">{t("dashboard.last_refresh")}: {lastRefresh.toLocaleTimeString("ar-SA")}</span>
+            <span className="ms-auto">{t("dashboard.last_refresh")} {lastRefresh.toLocaleTimeString(locale === "ar" ? "ar-SA" : "en-US")}</span>
           )}
           <button onClick={() => runDashboard(options.asset, options.tf, options.capital, options.riskPct)}
-            className="btn-ghost text-xs py-0.5 px-2 ms-1">🔄 {t("dashboard.refresh")}</button>
+            className="btn-ghost text-xs py-0.5 px-2 ms-1">{t("dashboard.refresh_btn")}</button>
         </div>
 
         <Table1Options onChange={(s) => setOptions(s)}/>
@@ -135,8 +135,8 @@ export default function DashboardPage() {
         {loading && (
           <div className="gold-card p-10 text-center">
             <div className="mb-3 animate-pulse flex justify-center"><LionMark size={48}/></div>
-            <div className="text-gold-400 font-bold">⏳ {t("dashboard.loading_title")}</div>
-            <div className="text-xs text-zinc-500 mt-2">{t("dashboard.loading_subtitle").replace("{asset}", options.asset)}</div>
+            <div className="text-gold-400 font-bold">{t("dashboard.loading.title")}</div>
+            <div className="text-xs text-zinc-500 mt-2">{t("dashboard.loading.subtitle")}</div>
           </div>
         )}
 
