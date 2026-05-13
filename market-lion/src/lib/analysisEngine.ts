@@ -72,7 +72,18 @@ function tableSummary(rows: RowReport[]): TableReport {
   return { rows, perTf, composite, confidence };
 }
 
-export function runAnalysis(candles: CandlesByTf) {
+/**
+ * Run the full analysis engine.
+ *
+ * @param candles       - OHLCV data per timeframe (from Yahoo Finance)
+ * @param fundamentalVotes - Optional: real per-TF vote aggregated from /api/fundamental
+ *                          (-1..+1 float). When absent, fundamental table stays neutral (0).
+ *                          This replaces the former MACD-as-macro-proxy hack.
+ */
+export function runAnalysis(
+  candles: CandlesByTf,
+  fundamentalVotes?: Partial<Record<Timeframe, number>>
+) {
   const coreRows = CORE_TOOLS.map(t =>
     buildRowReport(t.id, t.nameAr, t.nameEn, "coreTools", CORE_VOTERS, candles)
   );
@@ -86,15 +97,13 @@ export function runAnalysis(candles: CandlesByTf) {
     buildRowReport(t.id, t.nameAr, t.nameEn, "orderFlow", ORDER_FLOW_VOTERS, candles)
   );
 
-  // Fundamental: approximate via composite price action for now
-  // Real values injected by Table2Fundamental component via /api/fundamental
+  // Fundamental: use live votes from /api/fundamental if available.
+  // No MACD fallback — absent data → neutral (0). Weight gets redistributed in confluence.ts.
   const fundamentalRows = ECON_INDICATORS.slice(0, 20).map(t => {
     const perTf: Record<Timeframe, -1|0|1> = {} as any;
     for (const tf of TIMEFRAMES) {
-      const c = candles[tf] || [];
-      perTf[tf] = c.length >= MIN_CANDLES
-        ? runVoter(INDICATOR_VOTERS, 12, c) // MACD as macro proxy
-        : 0;
+      const v = fundamentalVotes?.[tf] ?? 0;
+      perTf[tf] = (v > 0.05 ? 1 : v < -0.05 ? -1 : 0) as -1|0|1;
     }
     const decision = buildRowDecision(perTf, "indicators");
     return { id: t.id, nameAr: t.nameAr, nameEn: t.nameEn, decision };

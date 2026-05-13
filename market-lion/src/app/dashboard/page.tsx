@@ -59,10 +59,12 @@ export default function DashboardPage() {
       const { buildLevels: bl, computeLotSize: cl } = { buildLevels, computeLotSize };
       const levels = bl(direction === "NEUTRAL" ? "BUY" : direction, lastPrice, atr);
       const assetDef = ASSETS.find((a: any) => a.symbol === asset) || ASSETS[0];
+      const slPriceDist = Math.abs(levels.entry - levels.sl);
       const sizing = cl({
         capital, riskPct,
         pipValuePerLot: assetDef.pipValuePerLot,
-        stopLossPips: Math.max(1, Math.abs(levels.entry - levels.sl) / 0.0001),
+        // Use per-asset pipSize — 0.0001 is wrong for Gold (0.1), Oil (0.01), USD/JPY (0.01)
+        stopLossPips: Math.max(1, slPriceDist / assetDef.pipSize),
       });
 
       const enrich = (rows: any[], defs: any[], kb: any, prefix = "") =>

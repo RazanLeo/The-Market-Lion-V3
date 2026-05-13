@@ -59,3 +59,19 @@ export function computeLotSize(p: { capital: number; riskPct: number; pipValuePe
 export function effectiveRR(levels: TradeLevels) {
   return Math.abs(levels.tp4 - levels.entry) / Math.abs(levels.sl - levels.entry);
 }
+
+/**
+ * Move SL to the previous TP after each target is hit (trailing stop progression).
+ * TP1 hit → SL moves to breakeven (entry)
+ * TP2 hit → SL moves to TP1
+ * TP3 hit → SL moves to TP2
+ * TP4 hit → SL moves to TP3 (partial close, let rest run)
+ */
+export function applyTrailing(levels: TradeLevels, hitTP: 1|2|3|4): TradeLevels {
+  const newSl =
+    hitTP === 1 ? levels.entry :
+    hitTP === 2 ? levels.tp1   :
+    hitTP === 3 ? levels.tp2   :
+                  levels.tp3;
+  return { ...levels, sl: newSl };
+}

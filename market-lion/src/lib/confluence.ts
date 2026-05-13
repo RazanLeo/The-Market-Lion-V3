@@ -29,14 +29,31 @@ export function combineTables(s: {
   indicators: TableSummary;
   orderFlow: TableSummary;
 }): ConfluenceResult {
+  // If fundamental data has no live signal (confidence near zero),
+  // redistribute its 20% weight proportionally to the other four tables
+  // so the score isn't artificially diluted.
+  const fundLive = s.fundamental.confidence > 0.01;
+  const weights = fundLive
+    ? TABLE_WEIGHTS
+    : (() => {
+        const rem = 100 - TABLE_WEIGHTS.fundamental;
+        return {
+          fundamental: 0,
+          coreTools:   TABLE_WEIGHTS.coreTools   * 100 / rem,
+          schools:     TABLE_WEIGHTS.schools     * 100 / rem,
+          indicators:  TABLE_WEIGHTS.indicators  * 100 / rem,
+          orderFlow:   TABLE_WEIGHTS.orderFlow   * 100 / rem,
+        };
+      })();
+
   const perTf: Record<Timeframe, number> = {} as any;
   for (const tf of TIMEFRAMES) {
     const total =
-      s.fundamental.perTf[tf] * TABLE_WEIGHTS.fundamental +
-      s.coreTools.perTf[tf]   * TABLE_WEIGHTS.coreTools   +
-      s.schools.perTf[tf]     * TABLE_WEIGHTS.schools     +
-      s.indicators.perTf[tf]  * TABLE_WEIGHTS.indicators  +
-      s.orderFlow.perTf[tf]   * TABLE_WEIGHTS.orderFlow;
+      s.fundamental.perTf[tf] * weights.fundamental +
+      s.coreTools.perTf[tf]   * weights.coreTools   +
+      s.schools.perTf[tf]     * weights.schools     +
+      s.indicators.perTf[tf]  * weights.indicators  +
+      s.orderFlow.perTf[tf]   * weights.orderFlow;
     // total is roughly in (-100..+100)
     perTf[tf] = Math.max(-100, Math.min(100, total));
   }
