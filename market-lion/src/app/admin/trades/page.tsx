@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-export const metadata = { title: "إدارة الصفقات — Admin", robots: { index: false, follow: false } };
+export const metadata = { title: "Trades — Admin", robots: { index: false, follow: false } };
 
 const TRADES = [
   { id: "T-12540", user: "Trader-218", asset: "XAU/USD", side: "BUY",  lots: 0.05, entry: 2050.50, sl: 2045.50, tp: 2065.50, pnl: 120.40, status: "CLOSED", time: "2026-05-12 06:30" },
@@ -17,11 +17,11 @@ export default function AdminTrades() {
     <main className="min-h-screen bg-bg">
       <div className="max-w-7xl mx-auto px-5 py-8">
         <Link href="/admin" className="text-gold-400 text-sm inline-flex items-center gap-1 mb-4"><ChevronLeft size={14}/> Admin Home</Link>
-        <h1 className="font-display text-3xl gold-text mb-4">إدارة الصفقات (سجل + لايف)</h1>
+        <h1 className="font-display text-3xl gold-text mb-4">Trades (History + Live)</h1>
         <div className="gold-card p-4 overflow-x-auto">
           <table className="tbl">
             <thead>
-              <tr><th>#</th><th>المستخدم</th><th>الأصل</th><th>الجانب</th><th>اللوت</th><th>الدخول</th><th>SL</th><th>TP</th><th>PnL</th><th>الحالة</th><th>الوقت</th></tr>
+              <tr><th>#</th><th>User</th><th>Asset</th><th>Side</th><th>Lot</th><th>Entry</th><th>SL</th><th>TP</th><th>PnL</th><th>Status</th><th>Time</th></tr>
             </thead>
             <tbody>
               {TRADES.map(t => (
@@ -29,7 +29,7 @@ export default function AdminTrades() {
                   <td className="font-mono text-xs">{t.id}</td>
                   <td>{t.user}</td>
                   <td className="font-semibold">{t.asset}</td>
-                  <td>{t.side === "BUY" ? <span className="chip-buy">شراء</span> : <span className="chip-sell">بيع</span>}</td>
+                  <td>{t.side === "BUY" ? <span className="chip-buy">BUY</span> : <span className="chip-sell">SELL</span>}</td>
                   <td>{t.lots.toFixed(2)}</td>
                   <td className="font-mono">{t.entry}</td>
                   <td className="font-mono text-red-400">{t.sl}</td>

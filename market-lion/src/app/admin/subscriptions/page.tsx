@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-export const metadata = { title: "إدارة الاشتراكات — Admin", robots: { index: false, follow: false } };
+export const metadata = { title: "Subscriptions — Admin", robots: { index: false, follow: false } };
 
 const SUBS = [
-  { id: "S-001", user: "رزان توفيق",  plan: "OWNER",       amount: 0,    status: "ACTIVE",    starts: "2026-01-01", ends: "Lifetime",  method: "—" },
+  { id: "S-001", user: "Razan Tawfiq",  plan: "OWNER",       amount: 0,    status: "ACTIVE",    starts: "2026-01-01", ends: "Lifetime",  method: "—" },
   { id: "S-002", user: "Trader-218",  plan: "INDIVIDUAL",  amount: 2000, status: "ACTIVE",    starts: "2026-04-12", ends: "2026-05-12", method: "MADA" },
   { id: "S-003", user: "Trader-091",  plan: "INDIVIDUAL",  amount: 2000, status: "ACTIVE",    starts: "2026-04-15", ends: "2026-05-15", method: "Visa" },
   { id: "S-004", user: "Trader-302",  plan: "INSTITUTION", amount: 6000, status: "ACTIVE",    starts: "2026-04-01", ends: "2026-05-01", method: "PayPal" },
@@ -18,11 +18,11 @@ export default function AdminSubs() {
     <main className="min-h-screen bg-bg">
       <div className="max-w-7xl mx-auto px-5 py-8">
         <Link href="/admin" className="text-gold-400 text-sm inline-flex items-center gap-1 mb-4"><ChevronLeft size={14}/> Admin Home</Link>
-        <h1 className="font-display text-3xl gold-text mb-4">إدارة الاشتراكات</h1>
+        <h1 className="font-display text-3xl gold-text mb-4">Subscriptions</h1>
         <div className="gold-card p-4 overflow-x-auto">
           <table className="tbl">
             <thead>
-              <tr><th>#</th><th>المستخدم</th><th>الباقة</th><th>المبلغ</th><th>الحالة</th><th>البداية</th><th>الانتهاء</th><th>طريقة الدفع</th><th>إجراءات</th></tr>
+              <tr><th>#</th><th>User</th><th>Plan</th><th>Amount</th><th>Status</th><th>Starts</th><th>Ends</th><th>Method</th><th>Actions</th></tr>
             </thead>
             <tbody>
               {SUBS.map(s => (
@@ -38,8 +38,8 @@ export default function AdminSubs() {
                   <td className="text-zinc-400">{s.ends}</td>
                   <td>{s.method}</td>
                   <td className="space-x-1 space-x-reverse">
-                    {s.status === "ACTIVE" && <button className="btn-ghost text-xs">إلغاء</button>}
-                    {s.status === "PAUSED" && <button className="btn-gold text-xs">تفعيل</button>}
+                    {s.status === "ACTIVE" && <button className="btn-ghost text-xs">Cancel</button>}
+                    {s.status === "PAUSED" && <button className="btn-gold text-xs">Activate</button>}
                   </td>
                 </tr>
               ))}

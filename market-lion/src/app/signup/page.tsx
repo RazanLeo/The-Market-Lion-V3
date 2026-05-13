@@ -41,7 +41,7 @@ export default function SignupPage() {
             <select name="broker" value={brokerId} onChange={e => setBrokerId(e.target.value)}
               className="w-full bg-bg-card border border-gold-500/25 rounded-lg px-3 py-2.5">
               {BROKERS.map(x => (
-                <option key={x.id} value={x.id}>{x.name}{x.primary ? " ✓ (موصى)" : ""}</option>
+                <option key={x.id} value={x.id}>{x.name}{x.primary ? " ✓ (recommended)" : ""}</option>
               ))}
             </select>
           </div>
