@@ -36,7 +36,7 @@ const TOOL_EXPLANATIONS: Record<string, string> = {
 };
 
 export function Table6OrderFlow({ rows }: { rows: RowReport[] }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   return (
     <TableShell number={6}
       title={t("tables.t6.title")}
@@ -59,10 +59,10 @@ export function Table6OrderFlow({ rows }: { rows: RowReport[] }) {
           {WHALE_TRACKERS.map(w => (
             <tr key={w.id}>
               <td className="text-zinc-400">{w.id}</td>
-              <td className="font-semibold">{w.nameAr}</td>
+              <td className="font-semibold">{locale === "ar" ? w.nameAr : (w.nameEn || w.nameAr)}</td>
               <td className="text-center">
-                <InfoButton title={`${t("t6.info.top_institutions")}: ${w.nameAr}`}>
-                  {`الفئة: ${w.nameAr}\n\nأبرز المؤسسات:\n${w.examples.map(e => "• " + e).join("\n")}\n\nيرصد البوت لحظياً حجم صفقات هذه المؤسسات عبر:\n- تقارير COT الأسبوعية من CFTC\n- بيانات Bookmap للـ Order Book\n- ETF Flows من WGC\n- إيداعات 13F من SEC.`}
+                <InfoButton title={`${t("t6.info.top_institutions")}: ${locale === "ar" ? w.nameAr : (w.nameEn || w.nameAr)}`}>
+                  {`الفئة: ${locale === "ar" ? w.nameAr : (w.nameEn || w.nameAr)}\n\nأبرز المؤسسات:\n${w.examples.map(e => "• " + e).join("\n")}\n\nيرصد البوت لحظياً حجم صفقات هذه المؤسسات عبر:\n- تقارير COT الأسبوعية من CFTC\n- بيانات Bookmap للـ Order Book\n- ETF Flows من WGC\n- إيداعات 13F من SEC.`}
                 </InfoButton>
               </td>
               <td className="text-center text-zinc-300">—</td>
@@ -126,10 +126,10 @@ export function Table6OrderFlow({ rows }: { rows: RowReport[] }) {
             return (
               <tr key={tool.id}>
                 <td className="text-zinc-400">{tool.id}</td>
-                <td className="font-semibold">{tool.nameAr}</td>
+                <td className="font-semibold">{locale === "ar" ? tool.nameAr : (tool.nameEn || tool.nameAr)}</td>
                 <td><TierChip tier={tool.tier}/></td>
                 <td className="text-center">
-                  <InfoButton title={`${t("vote.col.explanation")}: ${tool.nameAr}`}>{expl}</InfoButton>
+                  <InfoButton title={`${t("vote.col.explanation")}: ${locale === "ar" ? tool.nameAr : (tool.nameEn || tool.nameAr)}`}>{expl}</InfoButton>
                 </td>
                 {TIMEFRAMES.map(tf => (
                   <td key={tf} className="text-center">

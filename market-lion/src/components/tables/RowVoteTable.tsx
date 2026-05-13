@@ -79,8 +79,9 @@ function computeSummary(rows: EnrichedRow[]) {
 
 export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
   { rows: EnrichedRow[]; weightLabel: string; totalWeightPct: number }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const summary = computeSummary(rows);
+  const displayName = (r: EnrichedRow) => locale === "ar" ? r.nameAr : (r.nameEn || r.nameAr);
 
   return (
     <div>
@@ -110,14 +111,14 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
                 <td className="font-semibold text-zinc-100">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {r.tier && <TierChip tier={r.tier}/>}
-                    <span className="text-sm">{r.nameAr}</span>
+                    <span className="text-sm">{displayName(r)}</span>
                   </div>
                 </td>
                 <td className="text-zinc-400 text-xs">{r.category || "—"}</td>
                 <td className="text-center">
-                  <InfoButton title={`${t("vote.col.explanation")}: ${r.nameAr}`}>
+                  <InfoButton title={`${t("vote.col.explanation")}: ${displayName(r)}`}>
                     {r.description ||
-                     `${t("vote.col.tool")}: ${r.nameAr}\n${t("vote.col.category")}: ${r.category || "—"}\n\n${t("vote.info.fallback")}`}
+                     `${t("vote.col.tool")}: ${displayName(r)}\n${t("vote.col.category")}: ${r.category || "—"}\n\n${t("vote.info.fallback")}`}
                   </InfoButton>
                 </td>
                 {TIMEFRAMES.map(tf => (
@@ -141,8 +142,8 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
                 <td className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     <DecisionPill d={r.decision.decision}/>
-                    <InfoButton title={`${t("vote.col.result")} — ${r.nameAr}`} dense>
-                      {`${r.nameAr}\n\n` +
+                    <InfoButton title={`${t("vote.col.result")} — ${displayName(r)}`} dense>
+                      {`${displayName(r)}\n\n` +
                        `${t("vote.info.weighted_score")}: ${r.decision.weighted.toFixed(3)}\n` +
                        `${t("vote.col.confidence")}: ${(r.decision.confidence*100).toFixed(1)}%\n` +
                        `${t("vote.col.tf_alignment")}: ${(r.decision.alignment*100).toFixed(0)}%\n` +
@@ -152,7 +153,7 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
                   </div>
                 </td>
                 <td className="text-center">
-                  <ChartToggle nameEn={r.nameEn} label={r.nameAr}/>
+                  <ChartToggle nameEn={r.nameEn} label={displayName(r)}/>
                 </td>
               </tr>
             );
