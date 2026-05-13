@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { ASSETS } from "@/data/assets";
 import { fetchYahooQuote, fetchYahooCandles } from "@/lib/marketData";
 
+// Cache the bulk-fetch response for 30s — single user refresh doesn't hammer Yahoo 9×.
+export const revalidate = 30;
+
 // ATR-based volatility from recent candles
 async function computeATR(symbol: string, tf = "15m", period = 14): Promise<number> {
   const candles = await fetchYahooCandles(symbol, tf, "5d");
@@ -18,12 +21,21 @@ async function computeATR(symbol: string, tf = "15m", period = 14): Promise<numb
   return atrSum / period;
 }
 
+const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+
 export async function GET(req: NextRequest) {
   const sym = req.nextUrl.searchParams.get("symbol");
   if (sym) {
     const [q, atr] = await Promise.all([fetchYahooQuote(sym), computeATR(sym)]);
     return NextResponse.json({ symbol: sym, ...q, atr }, { headers: { "Cache-Control": "no-store" } });
   }
-  const out = await Promise.all(ASSETS.map(async a => ({ symbol: a.symbol, ...(await fetchYahooQuote(a.symbol)) })));
+
+  // Sequential with 120ms gap — avoids Yahoo rate-limiting all 9 symbols at once.
+  const out: any[] = [];
+  for (const a of ASSETS) {
+    const q = await fetchYahooQuote(a.symbol);
+    out.push({ symbol: a.symbol, ...q });
+    await delay(120);
+  }
   return NextResponse.json({ items: out, ts: Date.now() });
 }
