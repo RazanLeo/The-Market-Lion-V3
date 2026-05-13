@@ -29,16 +29,22 @@ export async function fetchYahooQuote(symbol: string): Promise<{ price: number; 
   try {
     const a = ASSETS.find(x => x.symbol === symbol);
     if (!a) return null;
-    const url = `${YAHOO_BASE}/v7/finance/quote?symbols=${encodeURIComponent(a.yahoo)}`;
+    // /v7/finance/quote returns 401 for unauthenticated access since May 2024.
+    // /v8/finance/chart meta object contains regularMarketPrice + previousClose.
+    const url = `${YAHOO_BASE}/v8/finance/chart/${encodeURIComponent(a.yahoo)}?interval=1d&range=5d`;
     const res = await yahooFetch(url, 5);
     if (!res) return null;
     const json: any = await res.json();
-    const r = json?.quoteResponse?.result?.[0];
-    if (!r) return null;
+    const r = json?.chart?.result?.[0];
+    const m = r?.meta;
+    if (!m) return null;
+    const price = m.regularMarketPrice ?? m.previousClose ?? 0;
+    const prev  = m.chartPreviousClose ?? m.previousClose ?? price;
+    const changePct = prev ? ((price - prev) / prev) * 100 : 0;
     return {
-      price: r.regularMarketPrice ?? r.bid ?? r.ask ?? 0,
-      changePct: r.regularMarketChangePercent ?? 0,
-      ts: (r.regularMarketTime ?? Math.floor(Date.now()/1000)) * 1000,
+      price,
+      changePct,
+      ts: (m.regularMarketTime ?? Math.floor(Date.now() / 1000)) * 1000,
     };
   } catch { return null; }
 }
