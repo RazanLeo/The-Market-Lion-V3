@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect, useCallback } from "react";
 import { TIMEFRAMES, type Timeframe } from "@/data/timeframes";
 import { DecisionPill, TierChip } from "./TableShell";
 import { InfoButton } from "../InfoModal";
@@ -11,7 +12,55 @@ export type EnrichedRow = RowReport & {
   chartButtonText?: string;
 };
 
-// Compute the per-TF summary section (exactly following Excel rows 32-37 in sheets 3-6)
+// Map from indicator nameEn → TradingView study identifier
+const TV_STUDY: Record<string, string> = {
+  // Trend
+  "Parabolic SAR":          "PSAR@tv-basicstudies",
+  "Supertrend":             "Supertrend@tv-basicstudies",
+  "WMA":                    "MAWeighted@tv-basicstudies",
+  "HMA":                    "HullMA@tv-basicstudies",
+  "VWMA":                   "VWMA@tv-basicstudies",
+  "DEMA":                   "DEMA@tv-basicstudies",
+  "TEMA":                   "TEMA@tv-basicstudies",
+  "KAMA":                   "KAMA@tv-basicstudies",
+  "ALMA":                   "ALMA@tv-basicstudies",
+  "EMA":                    "MAExp@tv-basicstudies",
+  "SMA":                    "MASimple@tv-basicstudies",
+  // Momentum
+  "MACD":                   "MACD@tv-basicstudies",
+  "RSI":                    "RSI@tv-basicstudies",
+  "Stochastic Oscillator":  "Stoch@tv-basicstudies",
+  "Stochastic RSI":         "SMIErgodicIndicator@tv-basicstudies",
+  "ADX + DMI":              "ADX@tv-basicstudies",
+  "CCI":                    "CCI@tv-basicstudies",
+  "Williams %R":            "WilliamR@tv-basicstudies",
+  "ROC":                    "ROC@tv-basicstudies",
+  "Momentum":               "Momentum@tv-basicstudies",
+  "Awesome Oscillator":     "AwesomeOscillator@tv-basicstudies",
+  "Ultimate Oscillator":    "UO@tv-basicstudies",
+  "TRIX":                   "TRIX@tv-basicstudies",
+  "Aroon":                  "Aroon@tv-basicstudies",
+  // Volatility
+  "Bollinger Bands":        "BB@tv-basicstudies",
+  "ATR":                    "ATR@tv-basicstudies",
+  "Keltner Channels":       "KeltnerChannels@tv-basicstudies",
+  "Donchian Channels":      "DonchianChannels@tv-basicstudies",
+  // Volume
+  "OBV":                    "OBV@tv-basicstudies",
+  "MFI":                    "MFI@tv-basicstudies",
+  "A/D":                    "Accdist@tv-basicstudies",
+  "Chaikin Money Flow":     "CMF@tv-basicstudies",
+  "Force Index":            "ForceIndex@tv-basicstudies",
+  "Ease of Movement":       "EaseOfMovement@tv-basicstudies",
+  // Smart money
+  "VWAP":                   "VWAP@tv-basicstudies",
+  // Composite
+  "Ichimoku Cloud":         "IchimokuCloud@tv-basicstudies",
+  "BB %B + Bandwidth":      "BBPowerSqueeze@tv-basicstudies",
+  // Core tools / schools (commonly requested)
+  "Volume":                 "Volume@tv-basicstudies",
+};
+
 function computeSummary(rows: EnrichedRow[]) {
   const totalW = rows.reduce((a, r) => a + Math.abs(r.decision.weighted), 0);
   return TIMEFRAMES.map(tf => {
@@ -30,7 +79,6 @@ function computeSummary(rows: EnrichedRow[]) {
 export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
   { rows: EnrichedRow[]; weightLabel: string; totalWeightPct: number }) {
   const summary = computeSummary(rows);
-  const COLS = 12; // number of <th> columns
 
   return (
     <div>
@@ -102,14 +150,14 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
                   </div>
                 </td>
                 <td className="text-center">
-                  <Toggle id={r.id} drawText={r.chartButtonText || `رسم ${r.nameAr} على الشارت`}/>
+                  <ChartToggle nameEn={r.nameEn} label={r.nameAr}/>
                 </td>
               </tr>
             );
           })}
         </tbody>
 
-        {/* ────────── ملخص الجدول — حرفي من الإكسيل (صفوف 32-37) ────────── */}
+        {/* ملخص الجدول — حرفي من الإكسيل (صفوف 32-37) */}
         <tfoot>
           <tr className="bg-zinc-900/60 border-t-2 border-gold-500/40">
             <td colSpan={4} className="font-bold text-gold-400 text-xs text-center py-2">
@@ -172,13 +220,56 @@ export function RowVoteTable({ rows, weightLabel, totalWeightPct }:
   );
 }
 
-function Toggle({ id, drawText }: { id: number; drawText: string }) {
+// Actual TradingView chart toggle — adds/removes the indicator on the live chart
+function ChartToggle({ nameEn, label }: { nameEn: string; label: string }) {
+  const [on, setOn] = useState(false);
+  const [entityId, setEntityId] = useState<string | null>(null);
+  const studyKey = TV_STUDY[nameEn] || null;
+
+  const toggle = useCallback(async () => {
+    const widget = (window as any).mlTVWidget;
+    if (!studyKey) return; // no TV mapping for this indicator
+
+    if (!on) {
+      // Turn on — add indicator to chart
+      if (!widget) return;
+      try {
+        const chart = widget.activeChart ? widget.activeChart() : widget.chart();
+        const id = await chart.createStudy(studyKey, false, false);
+        setEntityId(String(id));
+        setOn(true);
+      } catch (e) {
+        console.warn("TV createStudy failed", studyKey, e);
+      }
+    } else {
+      // Turn off — remove indicator from chart
+      if (widget && entityId) {
+        try {
+          const chart = widget.activeChart ? widget.activeChart() : widget.chart();
+          chart.removeEntity(entityId);
+        } catch {}
+      }
+      setEntityId(null);
+      setOn(false);
+    }
+  }, [on, entityId, studyKey]);
+
+  if (!studyKey) {
+    // No TV equivalent — show disabled toggle with tooltip
+    return (
+      <span className="inline-flex w-9 h-5 rounded-full bg-zinc-800 opacity-30 cursor-not-allowed" title={`${label} — غير متاح على TradingView`}/>
+    );
+  }
+
   return (
-    <label className="inline-flex items-center cursor-pointer select-none gap-1" title={drawText}>
-      <input type="checkbox" className="peer sr-only" defaultChecked={false}/>
-      <span className="w-9 h-5 rounded-full bg-zinc-700 peer-checked:bg-gold-500 relative transition-all
-        before:content-[''] before:absolute before:top-0.5 before:end-0.5 before:w-4 before:h-4
-        before:rounded-full before:bg-white before:transition-all peer-checked:before:end-[18px]"></span>
-    </label>
+    <button
+      onClick={toggle}
+      title={on ? `إيقاف ${label} من الشارت` : `رسم ${label} على الشارت`}
+      className={`w-9 h-5 rounded-full relative transition-all duration-200 focus:outline-none
+        ${on ? "bg-gold-500" : "bg-zinc-700"}`}
+    >
+      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200
+        ${on ? "end-0.5" : "start-0.5"}`}/>
+    </button>
   );
 }

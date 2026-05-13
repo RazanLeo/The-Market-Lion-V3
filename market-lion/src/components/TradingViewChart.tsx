@@ -17,15 +17,6 @@ const TV_INTERVAL: Record<string, string> = {
   "1M": "1", "5M": "5", "15M": "15", "30M": "30", "1H": "60", "4H": "240",
 };
 
-// Default studies: EMA, Volume, RSI, Bollinger Bands, MACD
-const DEFAULT_STUDIES = [
-  "STD;EMA",
-  "Volume@tv-basicstudies",
-  "RSI@tv-basicstudies",
-  "BB@tv-basicstudies",
-  "MACD@tv-basicstudies",
-];
-
 export function TradingViewChart({
   symbol = "XAU/USD",
   interval = "15M",
@@ -42,19 +33,21 @@ export function TradingViewChart({
   useEffect(() => {
     if (!containerRef.current) return;
     containerRef.current.innerHTML = "";
+    // Clear any previous widget so toggles reset
+    (window as any).mlTVWidget = null;
 
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/tv.js";
     script.async = true;
     script.onload = () => {
       if (!(window as any).TradingView || !containerRef.current) return;
-      new (window as any).TradingView.widget({
+      const widget = new (window as any).TradingView.widget({
         container_id: "ml-tv-chart",
         symbol: tvSym,
         interval: tvInt,
         timezone: "Asia/Riyadh",
         theme: "dark",
-        style: "1",          // Candlestick
+        style: "1",
         locale: "ar",
         toolbar_bg: "#0A0A0A",
         enable_publishing: false,
@@ -65,22 +58,23 @@ export function TradingViewChart({
         width: "100%",
         withdateranges: true,
         hide_top_toolbar: false,
-        studies: DEFAULT_STUDIES,
+        // No default studies — chart starts clean; user toggles from table rows
         overrides: {
-          "mainSeriesProperties.candleStyle.upColor":     "#22c55e",
-          "mainSeriesProperties.candleStyle.downColor":   "#ef4444",
-          "mainSeriesProperties.candleStyle.borderUpColor":   "#22c55e",
-          "mainSeriesProperties.candleStyle.borderDownColor": "#ef4444",
-          "mainSeriesProperties.candleStyle.wickUpColor":     "#22c55e",
-          "mainSeriesProperties.candleStyle.wickDownColor":   "#ef4444",
-          "paneProperties.background":                    "#0A0A0A",
-          "paneProperties.backgroundType":                "solid",
-          "paneProperties.gridProperties.color":          "#1a1a1a",
-          "scalesProperties.textColor":                   "#A1A1AA",
+          "mainSeriesProperties.candleStyle.upColor":          "#22c55e",
+          "mainSeriesProperties.candleStyle.downColor":        "#ef4444",
+          "mainSeriesProperties.candleStyle.borderUpColor":    "#22c55e",
+          "mainSeriesProperties.candleStyle.borderDownColor":  "#ef4444",
+          "mainSeriesProperties.candleStyle.wickUpColor":      "#22c55e",
+          "mainSeriesProperties.candleStyle.wickDownColor":    "#ef4444",
+          "paneProperties.background":                         "#0A0A0A",
+          "paneProperties.backgroundType":                     "solid",
+          "paneProperties.gridProperties.color":               "#1a1a1a",
+          "scalesProperties.textColor":                        "#A1A1AA",
         },
-        studies_overrides: {
-          "volume.volume.color.0":  "#ef4444",
-          "volume.volume.color.1":  "#22c55e",
+        // Expose widget globally once chart is ready
+        onChartReady: function() {
+          (window as any).mlTVWidget = widget;
+          window.dispatchEvent(new CustomEvent("mlChartReady"));
         },
       });
     };
@@ -93,6 +87,7 @@ export function TradingViewChart({
 
     return () => {
       if (containerRef.current) containerRef.current.innerHTML = "";
+      (window as any).mlTVWidget = null;
     };
   }, [tvSym, tvInt, height]);
 

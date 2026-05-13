@@ -232,15 +232,115 @@ export function Table2Fundamental({ asset }: { asset: string }) {
         </tbody>
       </table>
 
-      <div className="mt-6 gold-card p-4">
-        <h4 className="text-gold-400 font-bold mb-2">🎯 الاتجاه العام والقرار النهائي اللحظي للتحليل الأساسي</h4>
-        <div className="text-sm text-zinc-300">
-          الأصل المختار: <b className="text-gold-400">{asset}</b> • الاتجاه العام لليوم (1D) — يُحسب من تجميع كل التصويتات أعلاه.
-        </div>
-        <div className="mt-2 text-xs text-zinc-400">
-          مساهمة جدول التحليل الأساسي في القرار النهائي للمنصة: <b className="text-gold-400">— من 20٪</b>
-        </div>
-      </div>
+      {/* Summary tfoot — same structure as RowVoteTable (Excel Sheet 2, rows 32-37) */}
+      <FundamentalSummary data={data} asset={asset}/>
     </TableShell>
+  );
+}
+
+function FundamentalSummary({ data, asset }: { data: ApiResp | null; asset: string }) {
+  // Aggregate per-TF votes from all live indicators + news + statements
+  const tfTotals: Record<string, { buy: number; sell: number }> = {};
+  for (const tf of TF) tfTotals[tf] = { buy: 0, sell: 0 };
+
+  const allLive = [
+    ...(data?.indicators  || []),
+    ...(data?.news        || []),
+    ...(data?.statements  || []),
+  ];
+  for (const item of allLive) {
+    for (const tf of TF) {
+      const v = item.votes?.[tf] ?? 0;
+      if (v === 1)  tfTotals[tf].buy++;
+      if (v === -1) tfTotals[tf].sell++;
+    }
+  }
+
+  // Composite direction (weighted sum of all per-TF net scores using TF weights)
+  const TF_W: Record<string, number> = { "1M": 5, "5M": 10, "15M": 20, "30M": 18, "1H": 22, "4H": 25 };
+  let compositeNum = 0, compositeDen = 0;
+  for (const tf of TF) {
+    const net = tfTotals[tf].buy - tfTotals[tf].sell;
+    compositeNum += net * TF_W[tf];
+    compositeDen += TF_W[tf];
+  }
+  const composite = compositeDen > 0 ? compositeNum / compositeDen : 0;
+  const total = allLive.length;
+  const confidence = total > 0 ? Math.abs(composite) / total : 0;
+
+  const dirText = composite > 0.01 ? "↑ صاعد — شراء" : composite < -0.01 ? "↓ هابط — بيع" : "↔ عرضي — محايد";
+  const dirCls  = composite > 0.01 ? "text-green-400" : composite < -0.01 ? "text-red-400" : "text-zinc-400";
+
+  return (
+    <div className="mt-6">
+      <table className="tbl text-xs">
+        <thead>
+          <tr className="bg-zinc-900/60 border-t-2 border-gold-500/40">
+            <th className="text-gold-400 text-center py-2" colSpan={2}>
+              🎯 القرار النهائي — التحليل الأساسي (20٪)
+            </th>
+            {TF.map(tf => <th key={tf} className="text-center text-zinc-300">{tf}</th>)}
+            <th className="text-center text-zinc-300">الاتجاه العام (1D)</th>
+            <th className="text-center text-zinc-300">الثقة</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="bg-zinc-900/40">
+            <td colSpan={2} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">مجموع أوزان الشراء</td>
+            {TF.map(tf => (
+              <td key={tf} className="text-center text-green-400 font-mono">{tfTotals[tf].buy}</td>
+            ))}
+            <td className="text-center text-zinc-400">—</td>
+            <td className="text-center text-zinc-400">—</td>
+          </tr>
+          <tr className="bg-zinc-900/40">
+            <td colSpan={2} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">مجموع أوزان البيع</td>
+            {TF.map(tf => (
+              <td key={tf} className="text-center text-red-400 font-mono">{tfTotals[tf].sell}</td>
+            ))}
+            <td className="text-center text-zinc-400">—</td>
+            <td className="text-center text-zinc-400">—</td>
+          </tr>
+          <tr className="bg-zinc-900/40">
+            <td colSpan={2} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">صافي الدرجة</td>
+            {TF.map(tf => {
+              const net = tfTotals[tf].buy - tfTotals[tf].sell;
+              return (
+                <td key={tf} className={`text-center font-mono font-bold ${net > 0 ? "text-green-400" : net < 0 ? "text-red-400" : "text-zinc-400"}`}>
+                  {net >= 0 ? "+" : ""}{net}
+                </td>
+              );
+            })}
+            <td className="text-center text-gold-400 font-bold font-mono">{composite >= 0 ? "+" : ""}{composite.toFixed(2)}</td>
+            <td className="text-center text-gold-400">{(Math.min(confidence * 100, 100)).toFixed(0)}%</td>
+          </tr>
+          <tr className="bg-gold-500/8 border-t border-gold-500/20">
+            <td colSpan={2} className="text-gold-400 py-2 pe-2 text-end font-bold">القرار النهائي</td>
+            {TF.map(tf => {
+              const net = tfTotals[tf].buy - tfTotals[tf].sell;
+              return (
+                <td key={tf} className="text-center py-2">
+                  {net > 0 ? <span className="chip-buy text-[10px]">شراء 🟢</span>
+                   : net < 0 ? <span className="chip-sell text-[10px]">بيع 🔴</span>
+                   : <span className="chip-neutral text-[10px]">محايد ⚪</span>}
+                </td>
+              );
+            })}
+            <td className={`text-center font-bold ${dirCls}`}>{dirText}</td>
+            <td className="text-center text-gold-400">{(Math.min(confidence * 100, 100)).toFixed(0)}%</td>
+          </tr>
+          <tr className="bg-zinc-900/40 border-b border-gold-500/20">
+            <td colSpan={2} className="text-zinc-300 py-1.5 pe-2 text-end font-medium">مساهمة الجدول في القرار النهائي للمنصة</td>
+            <td colSpan={6} className="text-center text-gold-400 font-bold">
+              {data
+                ? `${(Math.abs(composite) / Math.max(total, 1) * 20).toFixed(2)}٪ من 20٪`
+                : "جاري الحساب…"
+              }
+            </td>
+            <td colSpan={2} className="text-center text-xs text-zinc-500">الأصل: {asset}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   );
 }

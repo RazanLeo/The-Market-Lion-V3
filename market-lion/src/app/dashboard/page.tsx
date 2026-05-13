@@ -10,7 +10,6 @@ import { Table7Final } from "@/components/tables/Table7Final";
 import { Table8Plan } from "@/components/tables/Table8Plan";
 import { RowVoteTable } from "@/components/tables/RowVoteTable";
 import { TableShell } from "@/components/tables/TableShell";
-import { TableFooterSummary } from "@/components/tables/TableFooterSummary";
 import { ASSETS } from "@/data/assets";
 import { ChatPanel } from "@/components/ChatPanel";
 import { PriceTicker } from "@/components/PriceTicker";
@@ -128,25 +127,19 @@ export default function DashboardPage() {
           <TableShell number={3} title="جدول ٣ — التحليل الفني / الأدوات الرئيسية الأساسية"
             weight="30%" subtitle="23 أداة — خوارزميات حقيقية على بيانات لحظية">
             <RowVoteTable rows={computed.coreRows} weightLabel="30%" totalWeightPct={30}/>
-            <TableFooterSummary tableNumber={3} weightPct={30} summary={computed.analysis.tables.coreTools}/>
           </TableShell>
 
           <TableShell number={4} title="جدول ٤ — جميع مدارس التحليل الفني"
             weight="25%" subtitle="48 مدرسة عالمية — تحليل آلي بالخوارزميات">
             <RowVoteTable rows={computed.schoolRows} weightLabel="25%" totalWeightPct={25}/>
-            <TableFooterSummary tableNumber={4} weightPct={25} summary={computed.analysis.tables.schools}/>
           </TableShell>
 
           <TableShell number={5} title="جدول ٥ — التحليل الفني / المؤشرات الفنية"
             weight="10%" subtitle="54 مؤشر فني — قراءات آنية">
             <RowVoteTable rows={computed.indRows} weightLabel="10%" totalWeightPct={10}/>
-            <TableFooterSummary tableNumber={5} weightPct={10} summary={computed.analysis.tables.indicators}/>
           </TableShell>
 
-          <div>
-            <Table6OrderFlow rows={computed.analysis.tables.orderFlow.rows}/>
-            <TableFooterSummary tableNumber={6} weightPct={15} summary={computed.analysis.tables.orderFlow}/>
-          </div>
+          <Table6OrderFlow rows={computed.analysis.tables.orderFlow.rows}/>
 
           <Table7Final summaries={computed.analysis.tables} confluence={computed.analysis.confluence}/>
 
