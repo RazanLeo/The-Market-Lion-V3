@@ -57,6 +57,40 @@ async function fetchTwelvedataQuote(symbol: string): Promise<{ price: number; ch
   } catch { return null; }
 }
 
+// Frankfurter (free, no key, ECB-based daily FX rates) — works for non-USD/non-gold pairs
+const FRANKFURTER_MAP: Record<string, { from: string; to: string }> = {
+  "EUR/USD": { from: "EUR", to: "USD" },
+  "GBP/USD": { from: "GBP", to: "USD" },
+  "AUD/USD": { from: "AUD", to: "USD" },
+  "NZD/USD": { from: "NZD", to: "USD" },
+  "USD/JPY": { from: "USD", to: "JPY" },
+  "USD/CHF": { from: "USD", to: "CHF" },
+  "USD/CAD": { from: "USD", to: "CAD" },
+};
+
+async function fetchFrankfurterQuote(symbol: string): Promise<{ price: number; changePct: number; ts: number } | null> {
+  const map = FRANKFURTER_MAP[symbol];
+  if (!map) return null;
+  try {
+    // Latest rate
+    const latest = await fetch(`https://api.frankfurter.dev/v1/latest?base=${map.from}&symbols=${map.to}`, { cache: "no-store" });
+    if (!latest.ok) return null;
+    const lj: any = await latest.json();
+    const price = lj?.rates?.[map.to];
+    if (typeof price !== "number") return null;
+    // Yesterday for changePct
+    const y = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const prevRes = await fetch(`https://api.frankfurter.dev/v1/${y}?base=${map.from}&symbols=${map.to}`, { cache: "no-store" });
+    let changePct = 0;
+    if (prevRes.ok) {
+      const pj: any = await prevRes.json();
+      const prev = pj?.rates?.[map.to];
+      if (typeof prev === "number" && prev > 0) changePct = ((price - prev) / prev) * 100;
+    }
+    return { price, changePct, ts: Date.now() };
+  } catch { return null; }
+}
+
 export async function fetchYahooQuote(symbol: string): Promise<{ price: number; changePct: number; ts: number } | null> {
   try {
     const a = ASSETS.find(x => x.symbol === symbol);
@@ -67,12 +101,13 @@ export async function fetchYahooQuote(symbol: string): Promise<{ price: number; 
     const res = await yahooFetch(url);
     if (!res) {
       // Yahoo failed from this container — try Twelvedata fallback
-      return fetchTwelvedataQuote(symbol);
+      const td = await fetchTwelvedataQuote(symbol); if (td) return td;
+      return fetchFrankfurterQuote(symbol);
     }
     const json: any = await res.json();
     const r = json?.chart?.result?.[0];
     const m = r?.meta;
-    if (!m) return fetchTwelvedataQuote(symbol);
+    if (!m) { const td = await fetchTwelvedataQuote(symbol); if (td) return td; return fetchFrankfurterQuote(symbol); }
     const price = m.regularMarketPrice ?? m.previousClose ?? 0;
     const prev  = m.chartPreviousClose ?? m.previousClose ?? price;
     const changePct = prev ? ((price - prev) / prev) * 100 : 0;
@@ -81,7 +116,7 @@ export async function fetchYahooQuote(symbol: string): Promise<{ price: number; 
       changePct,
       ts: (m.regularMarketTime ?? Math.floor(Date.now() / 1000)) * 1000,
     };
-  } catch { return fetchTwelvedataQuote(symbol); }
+  } catch { const td = await fetchTwelvedataQuote(symbol); if (td) return td; return fetchFrankfurterQuote(symbol); }
 }
 
 export async function fetchYahooCandles(symbol: string, interval = "15m", range = "5d"): Promise<OHLCV[]> {
