@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 
 const TV_SYMBOL: Record<string, string> = {
-  "XAU/USD": "OANDA:XAUUSD",
+  "XAU/USD": "TVC:GOLD",
   "XTI/USD": "TVC:USOIL",
   "EUR/USD": "FX:EURUSD",
   "GBP/USD": "FX:GBPUSD",

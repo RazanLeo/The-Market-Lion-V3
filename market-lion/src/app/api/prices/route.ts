@@ -2,13 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { ASSETS } from "@/data/assets";
 import { fetchYahooQuote, fetchYahooCandles } from "@/lib/marketData";
 
-// Cache the bulk-fetch response for 30s — single user refresh doesn't hammer Yahoo 9×.
 export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
-// ATR-based volatility from recent candles
+// In-memory cache of last-known-good prices — survives Yahoo rate limits
+// because Yahoo returns 401 intermittently, but at least 1 of 9 usually works each cycle.
+const priceCache: Map<string, { price: number; changePct: number; ts: number }> = new Map();
+const atrCache: Map<string, { atr: number; ts: number }> = new Map();
+
 async function computeATR(symbol: string, tf = "15m", period = 14): Promise<number> {
+  const cached = atrCache.get(symbol);
+  if (cached && Date.now() - cached.ts < 5 * 60_000) return cached.atr;  // 5 min cache
   const candles = await fetchYahooCandles(symbol, tf, "5d");
-  if (candles.length < period + 1) return 15;
+  if (candles.length < period + 1) return cached?.atr || 15;
   let atrSum = 0;
   for (let i = candles.length - period; i < candles.length; i++) {
     const tr = Math.max(
@@ -18,24 +24,36 @@ async function computeATR(symbol: string, tf = "15m", period = 14): Promise<numb
     );
     atrSum += tr;
   }
-  return atrSum / period;
+  const atr = atrSum / period;
+  atrCache.set(symbol, { atr, ts: Date.now() });
+  return atr;
 }
 
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
+async function refreshQuote(symbol: string) {
+  const q = await fetchYahooQuote(symbol);
+  if (q && typeof q.price === "number" && q.price > 0) {
+    priceCache.set(symbol, { price: q.price, changePct: q.changePct ?? 0, ts: q.ts });
+    return q;
+  }
+  // Yahoo failed — return last-known-good (may be stale)
+  return priceCache.get(symbol) ?? null;
+}
+
 export async function GET(req: NextRequest) {
   const sym = req.nextUrl.searchParams.get("symbol");
   if (sym) {
-    const [q, atr] = await Promise.all([fetchYahooQuote(sym), computeATR(sym)]);
-    return NextResponse.json({ symbol: sym, ...q, atr }, { headers: { "Cache-Control": "no-store" } });
+    const [q, atr] = await Promise.all([refreshQuote(sym), computeATR(sym)]);
+    return NextResponse.json({ symbol: sym, ...(q || {}), atr }, { headers: { "Cache-Control": "no-store" } });
   }
 
-  // Sequential with 120ms gap — avoids Yahoo rate-limiting all 9 symbols at once.
+  // Refresh each asset sequentially with delay — keep cache valid
   const out: any[] = [];
   for (const a of ASSETS) {
-    const q = await fetchYahooQuote(a.symbol);
-    out.push({ symbol: a.symbol, ...q });
+    const q = await refreshQuote(a.symbol);
+    out.push({ symbol: a.symbol, ...(q || {}) });
     await delay(120);
   }
-  return NextResponse.json({ items: out, ts: Date.now() });
+  return NextResponse.json({ items: out, ts: Date.now() }, { headers: { "Cache-Control": "no-store" } });
 }
