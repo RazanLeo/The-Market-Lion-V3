@@ -6,13 +6,32 @@ import type { OHLCV } from "./types";
 
 const YAHOO_BASE = process.env.YAHOO_FINANCE_BASE || "https://query1.finance.yahoo.com";
 
+const YAHOO_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Accept": "application/json, text/plain, */*",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Referer": "https://finance.yahoo.com/",
+  "Origin": "https://finance.yahoo.com",
+};
+
+async function yahooFetch(url: string, revalidate = 30): Promise<Response | null> {
+  try {
+    const res = await fetch(url, { headers: YAHOO_HEADERS, next: { revalidate } });
+    if (res.ok) return res;
+    // Fallback: alternate Yahoo endpoint
+    const url2 = url.replace("query1.finance.yahoo.com", "query2.finance.yahoo.com");
+    const res2 = await fetch(url2, { headers: YAHOO_HEADERS, next: { revalidate } });
+    return res2.ok ? res2 : null;
+  } catch { return null; }
+}
+
 export async function fetchYahooQuote(symbol: string): Promise<{ price: number; changePct: number; ts: number } | null> {
   try {
     const a = ASSETS.find(x => x.symbol === symbol);
     if (!a) return null;
     const url = `${YAHOO_BASE}/v7/finance/quote?symbols=${encodeURIComponent(a.yahoo)}`;
-    const res = await fetch(url, { next: { revalidate: 5 } });
-    if (!res.ok) return null;
+    const res = await yahooFetch(url, 5);
+    if (!res) return null;
     const json: any = await res.json();
     const r = json?.quoteResponse?.result?.[0];
     if (!r) return null;
@@ -29,8 +48,8 @@ export async function fetchYahooCandles(symbol: string, interval = "15m", range 
     const a = ASSETS.find(x => x.symbol === symbol);
     if (!a) return [];
     const url = `${YAHOO_BASE}/v8/finance/chart/${encodeURIComponent(a.yahoo)}?interval=${interval}&range=${range}`;
-    const res = await fetch(url, { next: { revalidate: 30 } });
-    if (!res.ok) return [];
+    const res = await yahooFetch(url, 30);
+    if (!res) return [];
     const j: any = await res.json();
     const r = j?.chart?.result?.[0];
     if (!r) return [];

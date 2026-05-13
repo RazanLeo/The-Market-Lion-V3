@@ -1,15 +1,16 @@
+"use client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-
-export const metadata = { title: "إفصاح المخاطر — The Market Lion" };
+import { useI18n } from "@/i18n/I18nProvider";
 
 export default function Risk() {
+  const { t } = useI18n();
   return (
     <>
       <Header/>
       <main className="max-w-3xl mx-auto px-4 py-14 text-zinc-300 leading-loose space-y-6">
-        <h1 className="font-display gold-text text-3xl">إفصاح المخاطر</h1>
-        <p className="text-red-400">⚠️ التداول في الأسواق المالية يحمل مخاطر عالية على رأس المال.</p>
+        <h1 className="font-display gold-text text-3xl">{t("risk.title")}</h1>
+        <p className="text-red-400">⚠️ {t("risk.subtitle")}</p>
 
         <section><h2 className="text-gold-400 font-bold text-xl mb-2">١) طبيعة المخاطر</h2>
           <p>تداول العقود مقابل الفروقات (CFDs) والفوركس والسلع ينطوي على مخاطر عالية بسبب الرفع المالي. قد تخسر أكثر من رأس مالك الأولي. النتائج السابقة لا تضمن النتائج المستقبلية.</p></section>

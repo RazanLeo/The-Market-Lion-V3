@@ -1,14 +1,16 @@
+"use client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-
-export const metadata = { title: "سياسة الاسترداد — The Market Lion" };
+import { useI18n } from "@/i18n/I18nProvider";
 
 export default function Refund() {
+  const { t } = useI18n();
   return (
     <>
       <Header/>
       <main className="max-w-3xl mx-auto px-4 py-14 text-zinc-300 leading-loose space-y-6">
-        <h1 className="font-display gold-text text-3xl">سياسة الاسترداد</h1>
+        <h1 className="font-display gold-text text-3xl">{t("refund.title")}</h1>
+        <p className="text-zinc-400">{t("policy.last_updated")}</p>
 
         <section><h2 className="text-gold-400 font-bold text-xl mb-2">١) ضمان 7 أيام</h2>
           <p>إذا اشتركت لأول مرة، يمكنك طلب استرداد كامل خلال 7 أيام من تاريخ الدفع، بشرط ألا تكون قد نفّذت أكثر من 10 صفقات عبر البوت.</p></section>

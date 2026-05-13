@@ -141,7 +141,7 @@ export default function DashboardPage() {
 
           <Table6OrderFlow rows={computed.analysis.tables.orderFlow.rows}/>
 
-          <Table7Final summaries={computed.analysis.tables} confluence={computed.analysis.confluence}/>
+          <Table7Final summaries={computed.analysis.tables} confluence={computed.analysis.confluence} userTf={options.tf as any}/>
 
           <Table8Plan
             asset={options.asset}

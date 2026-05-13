@@ -1,15 +1,16 @@
+"use client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-
-export const metadata = { title: "سياسة الخصوصية — The Market Lion" };
+import { useI18n } from "@/i18n/I18nProvider";
 
 export default function Privacy() {
+  const { t } = useI18n();
   return (
     <>
       <Header/>
       <main className="max-w-3xl mx-auto px-4 py-14 text-zinc-300 leading-loose space-y-6">
-        <h1 className="font-display gold-text text-3xl">سياسة الخصوصية</h1>
-        <p>آخر تحديث: مايو 2026</p>
+        <h1 className="font-display gold-text text-3xl">{t("privacy.title")}</h1>
+        <p className="text-zinc-400">{t("policy.last_updated")}</p>
 
         <section><h2 className="text-gold-400 font-bold text-xl mb-2">١) البيانات التي نجمعها</h2>
           <ul className="list-disc pe-6 space-y-1">

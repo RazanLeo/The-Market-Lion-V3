@@ -1,56 +1,44 @@
+"use client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-
-export const metadata = { title: "عن المنصة — The Market Lion" };
+import { useI18n } from "@/i18n/I18nProvider";
 
 export default function About() {
+  const { t } = useI18n();
   return (
     <>
       <Header/>
       <main className="max-w-4xl mx-auto px-4 py-14 space-y-8 text-zinc-300 leading-loose">
-        <h1 className="font-display gold-text text-4xl">عن منصة أسد السوق</h1>
+        <h1 className="font-display gold-text text-4xl">{t("about.title")} — {t("brand.name")}</h1>
 
         <section>
-          <h2 className="text-gold-400 text-2xl font-bold mb-3">الرؤية</h2>
-          <p>
-            أن يكون «أسد السوق» أول وأكبر وأفضل وأقوى وأسرع وأدق وأذكى منصة (بوت ومؤشر ومحلل تداول في العالم) تعمل بالذكاء الاصطناعي،
-            تدمج بين التحليل الأساسي والفني وتغطي كافة مدارس التحليل الفني وأدواته ومؤشراته واستراتيجياته التاريخية والحديثة،
-            ويكون رقم ١ ويتفوق على كل منافسيه بفارق واضح في الدقة والتغطية والذكاء.
-            مصمم ليس فقط للمنافسة وأن يكون رقم واحد بل مصمم أيضًا للهيمنة والسيطرة وفهم وقيادة السوق.
-          </p>
+          <h2 className="text-gold-400 text-2xl font-bold mb-3">{t("about.vision_title")}</h2>
+          <p>{t("about.vision")}</p>
         </section>
 
         <section>
-          <h2 className="text-gold-400 text-2xl font-bold mb-3">الرسالة</h2>
-          <p>
-            تمكين جميع المتداولين — سواء كانوا أفراد مبتدئين أو متوسطي الخبرة أو حتى محترفين —
-            على التداول بشكل صحيح بدون أخطاء وبدون خسائر بمستوى مؤسسي يُمكِّنُهم من التداول مع صناع وكبار السوق
-            عبر منظومة تحليل وتصويت متعدد المدارس وباتفاق كل أنواع التحليل الأساسي والفني بكامل مدارسه وأدواته
-            ومؤشراته واستراتيجياته، مع إدارة مخاطر صارمة متعددة الطبقات، وواجهة واضحة تُظهر كل ما يحدث خلف الكواليس بشفافية كاملة.
-            في نفس الوقت المنصة مصممة للاستخدام من قبل الأفراد ولصناع السوق.
-          </p>
+          <h2 className="text-gold-400 text-2xl font-bold mb-3">{t("about.mission_title")}</h2>
+          <p>{t("about.mission")}</p>
         </section>
 
         <section>
-          <h2 className="text-gold-400 text-2xl font-bold mb-3">الأهداف</h2>
-          <ul className="list-disc pe-6 space-y-2">
-            <li>تحقيق نسبة نجاح صفقات تستهدف ٩٩٪ من خلال تشديد شروط الدخول.</li>
-            <li>Confluence Score ≥ 75-80٪ + توافق التحليل الأساسي + غياب أحداث اقتصادية عالية التأثير في نافذة التداول.</li>
-            <li>إدارة مخاطر صارمة بنسبة Risk:Reward لا تقل عن 1:3.</li>
-            <li>دعم ١٢ لغة عالمية بتبديل لحظي بدون إعادة تحميل.</li>
-            <li>قابلية التوسع لخدمة ملايين المستخدمين بآليات Scaling أفقي.</li>
-            <li>دمج كل أدوات ومدارس ومؤشرات التحليل العالمي في قرار واحد قاطع.</li>
-          </ul>
+          <h2 className="text-gold-400 text-2xl font-bold mb-3">{t("about.founder_title")}</h2>
+          <p>{t("about.founder")}</p>
         </section>
 
-        <section>
-          <h2 className="text-gold-400 text-2xl font-bold mb-3">الأداء المستهدف</h2>
-          <p>
-            البوت مصمم ليستهدف صفقات بنسبة نجاح ٩٩٪ من خلال تشديد شرط الدخول
-            (Confluence Score ≥ 75-80٪ مع توافق التحليل الأساسي) ورفض الدخول عند أي تعارض جوهري بين المدارس
-            أو وجود حدث اقتصادي عالي التأثير خلال نافذة التداول (±30 دقيقة حول الأخبار الكبرى).
-          </p>
-        </section>
+        <div className="grid sm:grid-cols-4 gap-4 mt-8">
+          {[
+            { n: "500+", label: t("about.stats_users") },
+            { n: "125+", label: t("about.stats_tools") },
+            { n: "9", label: t("about.stats_assets") },
+            { n: "99.9%", label: t("about.stats_uptime") },
+          ].map((s, i) => (
+            <div key={i} className="gold-card p-5 text-center">
+              <div className="text-3xl font-display gold-text">{s.n}</div>
+              <div className="text-xs text-zinc-400 mt-1">{s.label}</div>
+            </div>
+          ))}
+        </div>
       </main>
       <Footer/>
     </>
