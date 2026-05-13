@@ -13,8 +13,10 @@ import { TableShell } from "@/components/tables/TableShell";
 import { ASSETS } from "@/data/assets";
 import { ChatPanel } from "@/components/ChatPanel";
 import { PriceTicker } from "@/components/PriceTicker";
+import { useI18n } from "@/i18n/I18nProvider";
 
 export default function DashboardPage() {
+  const { t } = useI18n();
   const [options, setOptions] = useState({
     asset: "XAU/USD", riskPct: 2, capital: 10000, tf: "15M", mode: "BOT" as "BOT"|"MANUAL"
   });
@@ -36,7 +38,6 @@ export default function DashboardPage() {
         { SCHOOLS_KB },
         { INDICATORS_KB },
       ] = await Promise.all([
-        // Fetch real analysis from server (Yahoo Finance candles → real indicators)
         fetch(`/api/analysis?symbol=${encodeURIComponent(asset)}`).then(r => r.json()),
         import("@/lib/tradePlan"),
         import("@/data/coreTools"),
@@ -49,21 +50,18 @@ export default function DashboardPage() {
 
       setDataSource(analysis.source === "live" ? "live" : "synthetic");
 
-      // Build price levels from the selected TF's last candle via market data
       const priceResp = await fetch(`/api/prices?symbol=${encodeURIComponent(asset)}`).catch(() => null);
       const priceData = priceResp?.ok ? await priceResp.json() : null;
       const lastPrice = priceData?.price || 2050;
       const atr = priceData?.atr || (asset === "XAU/USD" ? 15 : asset === "XTI/USD" ? 0.8 : 0.0015);
 
       const direction = analysis.confluence?.direction || "NEUTRAL";
-      const { buildLevels: bl, computeLotSize: cl } = { buildLevels, computeLotSize };
-      const levels = bl(direction === "NEUTRAL" ? "BUY" : direction, lastPrice, atr);
+      const levels = buildLevels(direction === "NEUTRAL" ? "BUY" : direction, lastPrice, atr);
       const assetDef = ASSETS.find((a: any) => a.symbol === asset) || ASSETS[0];
       const slPriceDist = Math.abs(levels.entry - levels.sl);
-      const sizing = cl({
+      const sizing = computeLotSize({
         capital, riskPct,
         pipValuePerLot: assetDef.pipValuePerLot,
-        // Use per-asset pipSize — 0.0001 is wrong for Gold (0.1), Oil (0.01), USD/JPY (0.01)
         stopLossPips: Math.max(1, slPriceDist / assetDef.pipSize),
       });
 
@@ -97,6 +95,22 @@ export default function DashboardPage() {
     return () => clearInterval(id);
   }, [options.asset, options.tf, options.capital, options.riskPct, runDashboard]);
 
+  // Draw Buy Lion / Sell Lion arrow when confluence gate opens
+  useEffect(() => {
+    if (!computed?.analysis?.confluence?.shouldBotEnter || !computed.lastPrice) return;
+    const draw = () => {
+      (window as any).mlTVDrawSignal?.(computed.direction, computed.lastPrice);
+    };
+    // If chart is already ready, draw immediately; otherwise wait for ready event
+    if ((window as any).mlTVWidget) {
+      draw();
+    } else {
+      const handler = () => draw();
+      window.addEventListener("mlChartReady", handler, { once: true });
+      return () => window.removeEventListener("mlChartReady", handler);
+    }
+  }, [computed?.analysis?.confluence?.shouldBotEnter, computed?.direction, computed?.lastPrice]);
+
   return (
     <>
       <Header variant="app"/>
@@ -106,12 +120,12 @@ export default function DashboardPage() {
         {/* Status bar */}
         <div className="flex items-center gap-3 text-xs text-zinc-500 bg-zinc-900/50 rounded-lg px-3 py-1.5">
           <span className={`w-2 h-2 rounded-full ${dataSource === "live" ? "bg-green-400 animate-pulse" : "bg-yellow-400"}`}/>
-          <span>{dataSource === "live" ? "بيانات لحظية — Yahoo Finance" : "بيانات تجريبية (تحقق من الاتصال)"}</span>
+          <span>{dataSource === "live" ? t("dashboard.data_live") : t("dashboard.data_synthetic")}</span>
           {lastRefresh && (
-            <span className="ms-auto">آخر تحديث: {lastRefresh.toLocaleTimeString("ar-SA")}</span>
+            <span className="ms-auto">{t("dashboard.last_refresh")}: {lastRefresh.toLocaleTimeString("ar-SA")}</span>
           )}
           <button onClick={() => runDashboard(options.asset, options.tf, options.capital, options.riskPct)}
-            className="btn-ghost text-xs py-0.5 px-2 ms-1">🔄 تحديث</button>
+            className="btn-ghost text-xs py-0.5 px-2 ms-1">🔄 {t("dashboard.refresh")}</button>
         </div>
 
         <Table1Options onChange={(s) => setOptions(s)}/>
@@ -120,24 +134,21 @@ export default function DashboardPage() {
         {loading && (
           <div className="gold-card p-10 text-center">
             <div className="text-3xl mb-3 animate-pulse">🦁</div>
-            <div className="text-gold-400 font-bold">⏳ جاري جلب البيانات الحقيقية وحساب التحليل الكامل…</div>
-            <div className="text-xs text-zinc-500 mt-2">يتم جلب بيانات {options.asset} من Yahoo Finance وتشغيل الخوارزميات على كل الأطر الزمنية</div>
+            <div className="text-gold-400 font-bold">⏳ {t("dashboard.loading_title")}</div>
+            <div className="text-xs text-zinc-500 mt-2">{t("dashboard.loading_subtitle").replace("{asset}", options.asset)}</div>
           </div>
         )}
 
         {!loading && computed && (<>
-          <TableShell number={3} title="جدول ٣ — التحليل الفني / الأدوات الرئيسية الأساسية"
-            weight="30%" subtitle="23 أداة — خوارزميات حقيقية على بيانات لحظية">
+          <TableShell number={3} title={t("tables.t3.title")} weight="30%" subtitle={t("tables.t3.subtitle")}>
             <RowVoteTable rows={computed.coreRows} weightLabel="30%" totalWeightPct={30}/>
           </TableShell>
 
-          <TableShell number={4} title="جدول ٤ — جميع مدارس التحليل الفني"
-            weight="25%" subtitle="48 مدرسة عالمية — تحليل آلي بالخوارزميات">
+          <TableShell number={4} title={t("tables.t4.title")} weight="25%" subtitle={t("tables.t4.subtitle")}>
             <RowVoteTable rows={computed.schoolRows} weightLabel="25%" totalWeightPct={25}/>
           </TableShell>
 
-          <TableShell number={5} title="جدول ٥ — التحليل الفني / المؤشرات الفنية"
-            weight="10%" subtitle="54 مؤشر فني — قراءات آنية">
+          <TableShell number={5} title={t("tables.t5.title")} weight="10%" subtitle={t("tables.t5.subtitle")}>
             <RowVoteTable rows={computed.indRows} weightLabel="10%" totalWeightPct={10}/>
           </TableShell>
 
