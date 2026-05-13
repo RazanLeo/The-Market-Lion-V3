@@ -31,6 +31,21 @@ export function DecisionPill({ d }: { d: "BUY"|"SELL"|"NEUTRAL" }) {
   return <span className="chip-neutral">محايد ⚪</span>;
 }
 
+const TIER_META: Record<string, { cls: string }> = {
+  S: { cls: "bg-yellow-400/20 text-yellow-300 ring-yellow-400/50" },
+  A: { cls: "bg-sky-400/20 text-sky-300 ring-sky-400/50" },
+  B: { cls: "bg-zinc-400/20 text-zinc-300 ring-zinc-500/40" },
+  C: { cls: "bg-zinc-600/20 text-zinc-400 ring-zinc-600/30" },
+};
+
 export function TierChip({ tier }: { tier: "S"|"A"|"B"|"C" }) {
-  return <span className={`chip-tier-${tier}`}>Tier {tier}</span>;
+  const m = TIER_META[tier] || TIER_META.C;
+  return (
+    <span
+      className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ring-1 shrink-0 ${m.cls}`}
+      title={`Tier ${tier}`}
+    >
+      {tier}
+    </span>
+  );
 }
